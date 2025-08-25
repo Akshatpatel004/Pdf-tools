@@ -1,0 +1,24 @@
+{
+  "name": "pdf-tools",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Akshat patel",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "docx-pdf": "^0.0.1",
+    "express": "^4.21.2",
+    "fs": "^0.0.1-security",
+    "image-to-pdf": "^3.0.2",
+    "multer": "^1.4.5-lts.1",
+    "office-to-pdf": "^4.0.0",
+    "path": "^0.12.7",
+    "pdf-merger-js": "^4.3.1",
+    "pdf-poppler": "^0.2.1"
+  }
+}
