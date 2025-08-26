@@ -288,12 +288,12 @@ app.post('/pdftopng',upload.array("pdf_png"),async (req , res)=>{
 		cre_dir()
 		console.log(req.files.length,req.files);
 		let pdf_png_array=[];
-		let pdf_png_name_array=[];
+		// let pdf_png_name_array=[];
 		let pdf_png_output = [`Download/pdf_png/pdf to png convert_${Date.now()}.zip`,`Download/temp_pdf/`,`Download/pdf_png`]
 		for (let fil of req.files) {
 			const pdf_png_dir_name=fil.originalname+`_${Date.now()}`;
 			if(!fs.existsSync(pdf_png_output[1]+pdf_png_dir_name)){fs.mkdirSync(pdf_png_output[1]+pdf_png_dir_name, { recursive: true })}
-			pdf_png_name_array.push(pdf_png_output[1]+pdf_png_dir_name)
+			// pdf_png_name_array.push(pdf_png_output[1]+pdf_png_dir_name)
 			let opts = {
 				format: 'jpg',
 				out_dir: path.join(__dirname , pdf_png_output[1]+pdf_png_dir_name+"/"),
@@ -356,4 +356,5 @@ app.post('/pdftopng',upload.array("pdf_png"),async (req , res)=>{
 
 app.listen(port , ()=>{
     console.log(`app is listening in this port http://localhost:${port}`)
+
 })
