@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>docx to pdf converter</title>
+    <link rel="stylesheet" href="../pdfs.css">
+    <link rel="shortcut icon" type="x-icon" href="../icons/pdf-tools.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet"/>
+    <script src="../docx_pdf/docx_pdf.js"></script>
+</head>
+<body>
+    <form action="/docxtopdf" method="post" enctype="multipart/form-data">
+        <div class="container h1" id="container">
+            <div class="header-section">
+                <h1>Docx to PDF</h1>
+                <p>Upload DOCX files you want yo concert it into PDF</p>
+            </div>
+            <div class="drop-section" >
+                <div class="col1 col" >
+                    <div class="cloud-icon">
+                        <img src="..\icons/cloud.png" alt="cloud" >
+                    </div>
+                    <span>Drag & Drop your files here</span>
+                    <span>OR</span>
+                    <!-- <button class="file-selector">Browse Files</button> -->
+                    <label for="file-input"><i class="fa-solid fa-arrow-up-from-bracket"></i>&nbsp; Choose Files To Upload</label>
+                    <div id="num-of-files">No Files Choosen</div>
+                    <input type="file" name="docx_pdf" id="file-input"  multiple accept=".docx" style="display: none;">
+                </div>
+                <div class="col2  hidden col">
+                    <span class="drop-here">Drop Here</span>
+                </div>
+            </div>
+            <div class="list-title">Uploaded Files</div>
+            <div class="all-list h3 hidden" id="all-list">
+                <ol class="fillist h3" id="files-list"></ol>
+            </div>
+            <div class="submit">
+                <!-- <input type="submit" id="submit"> -->
+                <button type="submit" id="submit"><i class="fa-regular fa-circle-down" style="padding-right:5px;" ></i>  Download</button>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

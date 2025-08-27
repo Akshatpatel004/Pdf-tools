@@ -1,0 +1,72 @@
+*{
+    padding: 0px;
+    margin: 0px;
+    background-color:whitesmoke;
+}
+.header{
+    height: 100px;
+    width: 300px;
+    display: flex;
+    margin-top: 25px;
+    margin-bottom: 30px;
+    margin-left: 50px;
+    align-items: center;
+}
+.logo{
+    height: 100px;
+    width: 80px;
+    background:none ;
+}
+.name{
+    font-family: 'Ubuntu', sans-serif;
+    padding-left: 30px;
+}
+.head-label{
+    padding-left: 280px;
+    margin-bottom: 50px;
+}
+h1{
+    font-size:40px;
+}
+label{
+    font-size: 18px;
+}
+.content-box{
+    overflow-y: auto;
+    height: 535px;
+}
+.contents{
+    display: flex;
+    padding-top:10px;
+    padding-bottom: 10px;
+}
+.contents label{
+    border: 2px solid lightslategray;
+    background-color: white;
+    border-radius: 20px;
+    height: 230px;
+    min-width: 350px;
+    max-width:355px;
+    margin-left: 20px;
+    cursor: pointer;
+}
+.contents label img{
+    height: 70px;
+    width: 70px;
+    margin-top: 20px;
+    margin-left: 20px;
+    background: none;
+}
+.contents label h3{
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 20px;
+    background-color: white;
+}
+.contents label p{
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 15px;
+    background-color: white;
+    font-size: 17px;
+}
