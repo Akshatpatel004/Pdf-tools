@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "Akshat patel",
   "license": "ISC",
-  "description": "",
+  "description": "I will make pdf-tools by using Nodejs as a backend",
   "dependencies": {
     "archiver": "^7.0.1",
     "docx-pdf": "^0.0.1",
