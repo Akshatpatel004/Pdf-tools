@@ -21,8 +21,8 @@ let download_file = {};
 const mainMenu = {
     reply_markup: {
         keyboard: [
-            ["PDF - Merge", "DOCX to PDF"],
-            ["IMAGES to PDF", "PPTX to PDF"],
+            ["PDF - Merge", "IMAGES to PDF"],
+            ["DOCX to PDF", "PPTX to PDF"],
         ],
         resize_keyboard: true,
     },
@@ -354,3 +354,4 @@ bot.on("message", async (msg) => {
         bot.sendMessage(msg.chat.id, "⚠️ Error processing files.", mainMenu);
     }
 });
+
