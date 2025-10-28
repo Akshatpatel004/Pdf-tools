@@ -15,13 +15,6 @@ const { convert, sizes } = require("image-to-pdf");
 const PDFMerger = require('pdf-merger-js');
 var merger = new PDFMerger();
 
-
-(async () => {
-if (!fs.existsSync("Uploads")) {
-			fs.mkdirSync("Uploads", { recursive: true })
-		}
-})();
-
 const main_dir = ["Download/Merge pdf/", "Download/docx to pdf/", "Download/image_pdf/", "Download/temp_pdf/", "Download/pdf_png/", "Download/ppt_pdf/"];
 function cre_dir() {
 	for (let dir of main_dir) {
@@ -286,4 +279,5 @@ app.listen(port, () => {
 
 
 require('./client_bot')
+
 
