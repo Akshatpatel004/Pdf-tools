@@ -92,7 +92,7 @@ bot.on("message", async (msg) => {
                 cancelMenu
             );
         } else if (text === "❌ Cancel") {
-            bot.sendMessage(chatId, "Cancelling.", mainMenu);
+            bot.sendMessage(chatId, "❌ Cancelling..", mainMenu);
             userchoice[userId] = null
             userchoice2[userId] = null;
             userfiles[userId] = [];
@@ -354,4 +354,5 @@ bot.on("message", async (msg) => {
         bot.sendMessage(msg.chat.id, "⚠️ Error processing files.", mainMenu);
     }
 });
+
 
