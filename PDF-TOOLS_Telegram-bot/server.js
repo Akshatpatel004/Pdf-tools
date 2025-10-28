@@ -47,6 +47,8 @@ function compress_file(files, save_path, msg) {
 	archive.finalize();
 }
 
+app.get('/', (req, res) => res.send('Bot is alive'));
+
 app.post('/merge', upload.any(), async (req, res) => {
 	if (!req.files || req.files.length === 0) {
 		console.log("no files uploaded");
@@ -275,5 +277,6 @@ app.post('/pptxtopdf', upload.array("pptx_pdf"), async (req, res) => {
 app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
+
 
 require('./client_bot')
