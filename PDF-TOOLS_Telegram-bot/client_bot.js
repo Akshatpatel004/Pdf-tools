@@ -22,7 +22,7 @@ const mainMenu = {
     reply_markup: {
         keyboard: [
             ["PDF - Merge", "DOCX to PDF"],
-            ["IMAGES to PDF", "PDF to IMAGES"],
+            ["IMAGES to PDF", "PPTX to PDF"],
         ],
         resize_keyboard: true,
     },
@@ -84,11 +84,11 @@ bot.on("message", async (msg) => {
                 "Upload image file (jpg or png). Convert images to PDF.",
                 cancelMenu
             );
-        } else if (text === "PDF to IMAGES") {
-            userchoice[userId] = "pdf_png";
+        } else if (text === "PPTX to PDF") {
+            userchoice[userId] = "pptx_pdf";
             bot.sendMessage(
                 chatId,
-                "Upload PDF file only. Convert each PDF page into JPG format.",
+                "Make PPT and PPTX slideshows easy t view by converting them to pdf .",
                 cancelMenu
             );
         } else if (text === "❌ Cancel") {
@@ -99,8 +99,6 @@ bot.on("message", async (msg) => {
             userphoto[userId] = [];
             download_file[userId] = [];
             await fs.promises.rm(download_dir, { recursive: true, force: true })
-        } else{
-            return bot.sendMessage(chatId, "Unknown message or Commmand !", mainMenu);
         }
 
         if (msg.document) {
@@ -233,7 +231,7 @@ bot.on("message", async (msg) => {
                     });
 
                     fs.writeFileSync(outputFilePath, serverResponse.data);
-                    await bot.deleteMessage(chatId, waitMsg.message_id);
+                    await bot.deleteMessage(chatId, waitMsg.message_id , mainMenu);
                     await bot.sendDocument(chatId, outputFilePath, {}, { contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
                     bot.sendMessage(chatId, "Done ✅", mainMenu);
 
@@ -251,15 +249,15 @@ bot.on("message", async (msg) => {
                     await fs.promises.rm(download_dir, { recursive: true, force: true })
                 }
 
-            } else if (userchoice[userId] === "pdf_png") {
+            } else if (userchoice[userId] === "pptx_pdf") {
                 if (userfiles[userId].length === 0) {
                     return bot.sendMessage(chatId, "Please upload file.", mainMenu);
                 }
                 waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.",mainMenu);
 
                 for (const element of userfiles[userId]) {
-                    if (element.mime !== "application/pdf") {
-                        bot.sendMessage(chatId, `❌ (${element.name}) is not a PDF file.`);
+                    if (element.mime !== "application/vnd.openxmlformats-officedocument.presentationml.presentation") {
+                        bot.sendMessage(chatId, `❌ (${element.name}) is not a PPT file.`);
                         continue;
                     }
 
@@ -270,13 +268,16 @@ bot.on("message", async (msg) => {
                     download_file[userId].push(localFilePath);
                 }
                 for (const f of download_file[userId]) {
-                    formData.append("pdf_png", fs.createReadStream(f));
+                    formData.append("pptx_pdf", fs.createReadStream(f));
                 }
 
                 try {
-                    endpoint = `${process.env.server_api}/pdftopng`;
-                    outputFilePath = path.join(download_dir, `PDF_to_Images_${Date.now()}.zip`);
-
+                    endpoint = `${process.env.server_api}/pptxtopdf`;
+                    if (download_file[userId].length >= 2) {
+                        outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.zip`);
+                    } else {
+                        outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.pdf`);
+                    }
                     const serverResponse = await axios.post(endpoint, formData, {
                         headers: formData.getHeaders(),
                         responseType: "arraybuffer"
@@ -284,7 +285,7 @@ bot.on("message", async (msg) => {
 
                     await fs.writeFileSync(outputFilePath, serverResponse.data);
                     await bot.deleteMessage(chatId, waitMsg.message_id);
-                    await bot.sendDocument(chatId, outputFilePath, {}, { contentType: "application/pdf" });
+                    await bot.sendDocument(chatId, outputFilePath, {}, { contentType: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
                     bot.sendMessage(chatId, "Done ✅", mainMenu);
 
                     userfiles[userId] = [];
