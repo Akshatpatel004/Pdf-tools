@@ -7,7 +7,7 @@ const multer = require('multer')
 const upload = multer({ dest: 'Uploads' })
 const port = process.env.port;
 
-// const docxConverttopdf = require('docx-pdf');					
+const docxConverttopdf = require('docx-pdf');					
 // const pdf_poppler = require('pdf-poppler');	
 const libre = require('libreoffice-convert');
 const archiver = require('archiver');
@@ -90,17 +90,15 @@ app.post('/docxtopdf', upload.array("docx_pdf"), async (req, res) => {
 			let docxtopdf_outputfilepath = ['Download/docx to pdf/Docx_to_pdf ' + Date.now() + ".pdf", `Download/docx to pdf/Docx to pdf convert_ ${Date.now()}.zip`];
 
 			if (req.files.length === 1) {
-				libre.convert(fs.readFileSync(req.files[0].path), '.pdf', undefined, async (err, result) => {
+				docxConverttopdf(req.files[0].path, docxtopdf_outputfilepath[0], function (err, result) {
 					if (err) {
 						console.log(err);
-					} else {
-						await fs.writeFileSync(docxtopdf_outputfilepath[0], result)
+					}
+					else {
 						console.log("pdf created successfully" + result);
 						res.download(docxtopdf_outputfilepath[0], (err) => {
 							if (err) {
 								console.log(err);
-								fs.unlinkSync(docxtopdf_outputfilepath[0]);
-								req.files.forEach((file) => fs.unlinkSync(file.path));
 							} else {
 								setTimeout(() => {
 									fs.unlinkSync(docxtopdf_outputfilepath[0]);
@@ -115,17 +113,16 @@ app.post('/docxtopdf', upload.array("docx_pdf"), async (req, res) => {
 				for (let fil of req.files) {
 					const doc_pdfpath = path.join('Download/temp_pdf', `${fil.originalname.replace(".docx", ".pdf")}`);
 					await new Promise((resolve, reject) => {
-						libre.convert(fs.readFileSync(fil.path), '.pdf', undefined, async (err, result) => {
+						docxConverttopdf(fil.path, doc_pdfpath, (err, result) => {
 							if (err) {
 								console.log(err);
 								reject(err);
 							} else {
-								await fs.writeFileSync(doc_pdfpath, result);
 								resolve(result)
-								pdfpath_array.push(doc_pdfpath);
 							}
 						});
 					});
+					pdfpath_array.push(doc_pdfpath);
 				}
 				compress_file(pdfpath_array, docxtopdf_outputfilepath[1], "Standard");
 				let time_interval = setInterval(() => {
@@ -133,9 +130,6 @@ app.post('/docxtopdf', upload.array("docx_pdf"), async (req, res) => {
 						res.download(docxtopdf_outputfilepath[1], (err) => {
 							if (err) {
 								console.log(err);
-								fs.unlinkSync(docxtopdf_outputfilepath[1]);
-								req.files.forEach((file) => fs.unlinkSync(file.path));
-								pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
 							} else {
 								setTimeout(() => {
 									fs.unlinkSync(docxtopdf_outputfilepath[1]);
