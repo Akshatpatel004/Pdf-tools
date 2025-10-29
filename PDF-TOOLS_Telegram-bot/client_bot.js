@@ -41,7 +41,7 @@ bot.on("message", async (msg) => {
         const chatId = msg.chat.id;
         const text = msg.text;
 
-        let waitMsg ;
+        let waitMsg;
         let endpoint;
         let outputFilePath;
         const formData = new FormData();
@@ -92,7 +92,7 @@ bot.on("message", async (msg) => {
                 cancelMenu
             );
         } else if (text === "❌ Cancel") {
-            bot.sendMessage(chatId, "❌ Cancelling..", mainMenu);
+            bot.sendMessage(chatId, "Cancelling.", mainMenu);
             userchoice[userId] = null
             userchoice2[userId] = null;
             userfiles[userId] = [];
@@ -123,7 +123,7 @@ bot.on("message", async (msg) => {
             if (!userchoice[userId]) {
                 return bot.sendMessage(chatId, "Please choose an option from the menu first.", mainMenu);
             }
-            const photo = msg.photo[msg.photo.length-1];
+            const photo = msg.photo[msg.photo.length - 1];
             const photo_fileId = photo.file_id;
             // let photo_fileName = 
             const photo_fileUrl = await bot.getFileLink(photo_fileId);
@@ -131,182 +131,21 @@ bot.on("message", async (msg) => {
             userphoto[userId].push({
                 fileid: photo_fileId,
                 url: photo_fileUrl,
-                name: `photo_pdf_${photo_fileId}_${Math.random()*10}_.jpg`
+                name: `photo_pdf_${photo_fileId}_${Math.random() * 10}_.jpg`
             });
         }
 
 
         if (msg.text === "✅ Conform Upload") {
             cre_dir();
-            bot.sendMessage(chatId, "Confirmed ✅",mainMenu);
+            bot.sendMessage(chatId, "Confirmed ✅", mainMenu);
             userchoice2[userId] = "✅ Conform Upload";
 
-            if (userchoice[userId] === "merge_pdf") {
-                if (userfiles[userId].length === 0) {
-                    return bot.sendMessage(chatId, "Please upload file.", mainMenu);
-                }
-                if (userfiles[userId].length < 2) {
-                    return bot.sendMessage(chatId, "please upload atleast 2 or more pdf file to merge .", mainMenu);
-                }
-                waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.",mainMenu);
-
-                for (const element of userfiles[userId]) {
-                    if (element.mime !== "application/pdf") {
-                        bot.sendMessage(chatId, `❌ (${element.name}) is not a PDF file.`);
-                        continue;
-                    }
-
-                    const localFilePath = path.join(download_dir, element.name);
-                    const response = await fetch(element.url);
-                    const buffer = Buffer.from(await response.arrayBuffer())
-                    fs.writeFileSync(localFilePath, buffer);
-                    download_file[userId].push(localFilePath);
-                }
-                for (const f of download_file[userId]) {
-                    formData.append("files", fs.createReadStream(f));
-                }
-
-                try {
-                    endpoint = `${process.env.server_api}/merge`;
-                    outputFilePath = path.join(download_dir, `Merged_${Date.now()}.pdf`);
-
-                    const serverResponse = await axios.post(endpoint, formData, {
-                        headers: formData.getHeaders(),
-                        responseType: "arraybuffer"
-                    });
-
-                    fs.writeFileSync(outputFilePath, serverResponse.data);
-                    await bot.deleteMessage(chatId, waitMsg.message_id);
-                    await bot.sendDocument(chatId, outputFilePath, {}, { contentType: "images/jpg" });
-                    bot.sendMessage(chatId, "Done ✅", mainMenu);
-
-                    userfiles[userId] = [];
-                    download_file[userId] = [];
-                    userchoice[userId] = null;
-                    userchoice2[userId] = null;
-                    await fs.promises.rm(download_dir, { recursive: true, force: true })
-
-                } catch (error) {
-                    userfiles[userId] = [];
-                    download_file[userId] = [];
-                    userchoice[userId] = null;
-                    userchoice2[userId] = null;
-                    await fs.promises.rm(download_dir, { recursive: true, force: true })
-                }
-
-            } else if (userchoice[userId] === "docx_pdf") {
-                if (userfiles[userId].length === 0) {
-                    return bot.sendMessage(chatId, "Please upload file.", mainMenu);
-                }
-                waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.",mainMenu);
-
-                for (const element of userfiles[userId]) {
-                    if (element.mime !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-                        bot.sendMessage(chatId, `❌ (${element.name}) is not a docx file.`);
-                        continue;
-                    }
-
-                    const localFilePath = path.join(download_dir, element.name);
-                    const response = await fetch(element.url);
-                    const buffer = Buffer.from(await response.arrayBuffer())
-                    fs.writeFileSync(localFilePath, buffer);
-                    download_file[userId].push(localFilePath);
-                }
-                for (const f of download_file[userId]) {
-                    formData.append("docx_pdf", fs.createReadStream(f));
-                }
-
-                try {
-                    endpoint = `${process.env.server_api}/docxtopdf`;
-
-                    if (download_file[userId].length >= 2) {
-                        outputFilePath = path.join(download_dir, `Docx_to_PDF_${Date.now()}.zip`);
-                    } else {
-                        outputFilePath = path.join(download_dir, `Docx_to_PDF_${Date.now()}.pdf`);
-                    }
-
-                    const serverResponse = await axios.post(endpoint, formData, {
-                        headers: formData.getHeaders(),
-                        responseType: "arraybuffer",
-                    });
-
-                    fs.writeFileSync(outputFilePath, serverResponse.data);
-                    await bot.deleteMessage(chatId, waitMsg.message_id , mainMenu);
-                    await bot.sendDocument(chatId, outputFilePath, {}, { contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-                    bot.sendMessage(chatId, "Done ✅", mainMenu);
-
-                    userfiles[userId] = [];
-                    download_file[userId] = [];
-                    userchoice[userId] = null;
-                    userchoice2[userId] = null;
-                    await fs.promises.rm(download_dir, { recursive: true, force: true })
-
-                } catch (error) {
-                    userfiles[userId] = [];
-                    download_file[userId] = [];
-                    userchoice[userId] = null;
-                    userchoice2[userId] = null;
-                    await fs.promises.rm(download_dir, { recursive: true, force: true })
-                }
-
-            } else if (userchoice[userId] === "pptx_pdf") {
-                if (userfiles[userId].length === 0) {
-                    return bot.sendMessage(chatId, "Please upload file.", mainMenu);
-                }
-                waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.",mainMenu);
-
-                for (const element of userfiles[userId]) {
-                    if (element.mime !== "application/vnd.openxmlformats-officedocument.presentationml.presentation") {
-                        bot.sendMessage(chatId, `❌ (${element.name}) is not a PPT file.`);
-                        continue;
-                    }
-
-                    const localFilePath = path.join(download_dir, element.name);
-                    const response = await fetch(element.url);
-                    const buffer = Buffer.from(await response.arrayBuffer())
-                    fs.writeFileSync(localFilePath, buffer);
-                    download_file[userId].push(localFilePath);
-                }
-                for (const f of download_file[userId]) {
-                    formData.append("pptx_pdf", fs.createReadStream(f));
-                }
-
-                try {
-                    endpoint = `${process.env.server_api}/pptxtopdf`;
-                    if (download_file[userId].length >= 2) {
-                        outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.zip`);
-                    } else {
-                        outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.pdf`);
-                    }
-                    const serverResponse = await axios.post(endpoint, formData, {
-                        headers: formData.getHeaders(),
-                        responseType: "arraybuffer"
-                    });
-
-                    await fs.writeFileSync(outputFilePath, serverResponse.data);
-                    await bot.deleteMessage(chatId, waitMsg.message_id);
-                    await bot.sendDocument(chatId, outputFilePath, {}, { contentType: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
-                    bot.sendMessage(chatId, "Done ✅", mainMenu);
-
-                    userfiles[userId] = [];
-                    download_file[userId] = [];
-                    userchoice[userId] = null;
-                    userchoice2[userId] = null;
-                    await fs.promises.rm(download_dir, { recursive: true, force: true })
-
-                } catch (error) {
-                    userfiles[userId] = [];
-                    download_file[userId] = [];
-                    userchoice[userId] = null;
-                    userchoice2[userId] = null;
-                    await fs.promises.rm(download_dir, { recursive: true, force: true })
-                }
-
-            } else if (userchoice[userId] === "image_pdf") {
+            if (userchoice[userId] === "image_pdf") {
                 if (userphoto[userId].length === 0) {
                     return bot.sendMessage(chatId, "Please upload images to convert it into pdf.", mainMenu);
                 }
-                waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.",mainMenu);
+                waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.", mainMenu);
 
                 for (const element of userphoto[userId]) {
                     const localFilePath = path.join(download_dir, element.name);
@@ -346,7 +185,102 @@ bot.on("message", async (msg) => {
                     userchoice2[userId] = null;
                     await fs.promises.rm(download_dir, { recursive: true, force: true })
                 }
-            }
+
+            } else if (["merge_pdf", "docx_pdf", "pptx_pdf"].includes(userchoice[userId])) {
+                if (userfiles[userId].length === 0) {
+                    return bot.sendMessage(chatId, "Please upload file.", mainMenu);
+                }
+                if (userchoice[userId] === "merge_pdf" && userfiles[userId].length < 2) {
+                    return bot.sendMessage(chatId, "please upload atleast 2 or more pdf file to merge .", mainMenu);
+                }
+                waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.", mainMenu);
+
+                for (const element of userfiles[userId]) {
+                    if (userchoice[userId] === "merge_pdf") {
+                        if (element.mime !== "application/pdf") {
+                            bot.sendMessage(chatId, `❌ (${element.name}) is not a PDF file.`);
+                            continue;
+                        }
+                    } else if (userchoice[userId] === "docx_pdf") {
+                        if (element.mime !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                            bot.sendMessage(chatId, `❌ (${element.name}) is not a docx file.`);
+                            continue;
+                        }
+                    } else if (userchoice[userId] === "pptx_pdf") {
+                        if (element.mime !== "application/vnd.openxmlformats-officedocument.presentationml.presentation") {
+                            bot.sendMessage(chatId, `❌ (${element.name}) is not a PPT file.`);
+                            continue;
+                        }
+                    }
+
+                    const localFilePath = path.join(download_dir, element.name);
+                    const response = await fetch(element.url);
+                    const buffer = Buffer.from(await response.arrayBuffer())
+                    fs.writeFileSync(localFilePath, buffer);
+                    download_file[userId].push(localFilePath);
+                }
+
+                if (userchoice[userId] === "merge_pdf") {
+                    for (const f of download_file[userId]) {
+                        formData.append("files", fs.createReadStream(f));
+                    }
+                } else if (userchoice[userId] === "docx_pdf") {
+                    for (const f of download_file[userId]) {
+                        formData.append("docx_pdf", fs.createReadStream(f));
+                    }
+                } else if (userchoice[userId] === "pptx_pdf") {
+                    for (const f of download_file[userId]) {
+                        formData.append("pptx_pdf", fs.createReadStream(f));
+                    }
+                }
+
+                try {
+                    if (userchoice[userId] === "merge_pdf") {
+                        endpoint = `${process.env.server_api}/merge`;
+                        outputFilePath = path.join(download_dir, `Merged_${Date.now()}.pdf`);
+
+                    } else if (userchoice[userId] === "docx_pdf") {
+                        endpoint = `${process.env.server_api}/docxtopdf`;
+                        if (download_file[userId].length >= 2) {
+                            outputFilePath = path.join(download_dir, `Docx_to_PDF_${Date.now()}.zip`);
+                        } else {
+                            outputFilePath = path.join(download_dir, `Docx_to_PDF_${Date.now()}.pdf`);
+                        }
+
+                    } else if (userchoice[userId] === "pptx_pdf") {
+                        endpoint = `${process.env.server_api}/pptxtopdf`;
+                        if (download_file[userId].length >= 2) {
+                            outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.zip`);
+                        } else {
+                            outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.pdf`);
+                        }
+                    }
+
+                    const serverResponse = await axios.post(endpoint, formData, {
+                        headers: formData.getHeaders(),
+                        responseType: "arraybuffer"
+                    });
+
+                    fs.writeFileSync(outputFilePath, serverResponse.data);
+                    await bot.deleteMessage(chatId, waitMsg.message_id);
+                    await bot.sendDocument(chatId, outputFilePath, {}, { contentType: "application/pdf" });
+                    bot.sendMessage(chatId, "Done ✅", mainMenu);
+
+                    userfiles[userId] = [];
+                    download_file[userId] = [];
+                    userchoice[userId] = null;
+                    userchoice2[userId] = null;
+                    await fs.promises.rm(download_dir, { recursive: true, force: true })
+
+                } catch (error) {
+                    userfiles[userId] = [];
+                    download_file[userId] = [];
+                    userchoice[userId] = null;
+                    userchoice2[userId] = null;
+                    await fs.promises.rm(download_dir, { recursive: true, force: true })
+                }
+
+            } 
         }
 
     } catch (error) {
@@ -354,5 +288,3 @@ bot.on("message", async (msg) => {
         bot.sendMessage(msg.chat.id, "⚠️ Error processing files.", mainMenu);
     }
 });
-
-
