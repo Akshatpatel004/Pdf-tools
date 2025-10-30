@@ -59,7 +59,7 @@ app.post('/office-to-pdf_converter', upload.array("pptx_pdf"), async (req, res) 
         return res.status(400).send("no files uploaded");
     } else {
         console.log(req.files.length, req.files);
-        let ppt_pdf_outputpath = [`Download/ppt_pdf/Office to pdf convert_${Date.now()}.pdf`, `Download/ppt_pdf/Office to pdf convert_${Date.now()}.zip`, `Download/temp_pdf/`]
+        let ppt_pdf_outputpath = [`Download/Office_PDF/Office to pdf convert_${Date.now()}.pdf`, `Download/Office_PDF/Office to pdf convert_${Date.now()}.zip`, `Download/temp_pdf/`]
         cre_dir()
         if (req.files.length === 1) {
             await converter(req.files[0].path , ppt_pdf_outputpath[0])
@@ -84,6 +84,7 @@ app.post('/office-to-pdf_converter', upload.array("pptx_pdf"), async (req, res) 
         } else if (req.files.length > 1) {
             let pptpath_array = [];
             for (let fil of req.files) {
+				const ppt_pdfpath=path.join(ppt_pdf_outputpath[2]+`${fil.originalname.replace(".pptx",".pdf")}`);
                 await converter(fil.path , ppt_pdfpath)
                 pptpath_array.push(ppt_pdfpath)
             }
@@ -112,4 +113,5 @@ app.post('/office-to-pdf_converter', upload.array("pptx_pdf"), async (req, res) 
 
 app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
+
 })
