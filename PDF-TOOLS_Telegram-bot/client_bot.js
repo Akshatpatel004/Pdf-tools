@@ -230,7 +230,7 @@ bot.on("message", async (msg) => {
                     }
                 } else if (userchoice[userId] === "pptx_pdf") {
                     for (const f of download_file[userId]) {
-                        formData.append("pptx_pdf", fs.createReadStream(f));
+                        formData.append("files", fs.createReadStream(f));
                     }
                 }
 
@@ -248,7 +248,7 @@ bot.on("message", async (msg) => {
                         }
 
                     } else if (userchoice[userId] === "pptx_pdf") {
-                        endpoint = `${process.env.server_api}/pptxtopdf`;
+                        endpoint = `${process.env.Server2_api}/office-to-pdf_converter`;
                         if (download_file[userId].length >= 2) {
                             outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.zip`);
                         } else {
@@ -288,3 +288,4 @@ bot.on("message", async (msg) => {
         bot.sendMessage(msg.chat.id, "⚠️ Error processing files.", mainMenu);
     }
 });
+
