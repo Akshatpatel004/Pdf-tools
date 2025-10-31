@@ -52,66 +52,73 @@ function compress_file(files, save_path, msg) {
 }
 
 
-app.get('/', async (req, res) => { res.send("office-to-pdf_libreoffice server is alive") });
+app.get('/', async (req, res) => {
+    cre_dir()
+    res.send("office-to-pdf_libreoffice server is alive")
+});
 
-app.post('/office-to-pdf_converter', upload.array("pptx_pdf"), async (req, res) => {
+app.post('/office-to-pdf_converter', upload.any(), async (req, res) => {
     if (!req.files || req.files.length === 0) {
-        return res.status(400).send("no files uploaded");
+        console.log("no files uploaded");
+        return res.status(400).send("no files uploaded")
     } else {
-        console.log(req.files.length, req.files);
-        let ppt_pdf_outputpath = [`Download/Office_PDF/Office to pdf convert_${Date.now()}.pdf`, `Download/Office_PDF/Office to pdf convert_${Date.now()}.zip`, `Download/temp_pdf/`]
         cre_dir()
-        if (req.files.length === 1) {
-            await converter(req.files[0].path , ppt_pdf_outputpath[0])
-            let time_interval = setInterval(() => {
-                if (fs.existsSync(ppt_pdf_outputpath[0])) {
-                    res.download(ppt_pdf_outputpath[0], (err) => {
-                        if (err) {
-                            console.log(err);
-                            fs.unlinkSync(ppt_pdf_outputpath[0]);
+        console.log(req.files)
+        try {
+            let docxtopdf_outputfilepath = ['Download/Office_PDF/Office-to-PDF' + Date.now() + ".pdf", `Download/Office_PDF/Office-to-PDF_convert_${Date.now()}.zip`];
+
+            if (req.files.length === 1) {
+                await converter(req.files[0].path, docxtopdf_outputfilepath[0]);
+                console.log("pdf created successfully" + result);
+                res.download(docxtopdf_outputfilepath[0], (err) => {
+                    if (err) {
+                        console.log(err);
+                        fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                        req.files.forEach((file) => fs.unlinkSync(file.path));
+                    } else {
+                        setTimeout(() => {
+                            fs.unlinkSync(docxtopdf_outputfilepath[0]);
                             req.files.forEach((file) => fs.unlinkSync(file.path));
-                        } else {
-                            console.log("Office to pdf download successfully");
-                            setTimeout(() => {
-                                fs.unlinkSync(ppt_pdf_outputpath[0]);
-                                req.files.forEach((file) => fs.unlinkSync(file.path));
-                            }, 5000)
-                        }
-                    })
-                    clearInterval(time_interval);
+                        }, 5000)
+                    }
+                })
+
+            } else if (req.files.length > 1) {
+                let pdfpath_array = [];
+                for (let fil of req.files) {
+                    const doc_pdfpath = path.join('Download/temp_pdf', `${fil.originalname}.pdf`);
+                    await converter(fil.path, doc_pdfpath)
+                    pdfpath_array.push(doc_pdfpath);
                 }
-            }, 1000)
-        } else if (req.files.length > 1) {
-            let pptpath_array = [];
-            for (let fil of req.files) {
-				const ppt_pdfpath=path.join(ppt_pdf_outputpath[2]+`${fil.originalname.replace(".pptx",".pdf")}`);
-                await converter(fil.path , ppt_pdfpath)
-                pptpath_array.push(ppt_pdfpath)
+                compress_file(pdfpath_array, docxtopdf_outputfilepath[1], "Standard");
+                let time_interval = setInterval(() => {
+                    if (fs.existsSync(docxtopdf_outputfilepath[1])) {
+                        res.download(docxtopdf_outputfilepath[1], (err) => {
+                            if (err) {
+                                console.log(err);
+                                fs.unlinkSync(docxtopdf_outputfilepath[1]);
+                                req.files.forEach((file) => fs.unlinkSync(file.path));
+                                pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
+                            } else {
+                                setTimeout(() => {
+                                    fs.unlinkSync(docxtopdf_outputfilepath[1]);
+                                    req.files.forEach((file) => fs.unlinkSync(file.path));
+                                    pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
+                                }, 5000)
+                            }
+                        })
+                        clearInterval(time_interval);
+                    }
+                }, 1000)
             }
-            await compress_file(pptpath_array, ppt_pdf_outputpath[1], "Standard");
-            let time_interval = await setInterval(() => {
-                if (fs.existsSync(ppt_pdf_outputpath[1])) {
-                    res.download(ppt_pdf_outputpath[1], (err) => {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            console.log("zip file download successfully");
-                            setTimeout(() => {
-                                fs.unlinkSync(ppt_pdf_outputpath[1]);
-                                req.files.forEach((file) => fs.unlinkSync(file.path));
-                                pptpath_array.forEach((pdf) => fs.unlinkSync(pdf));
-                            }, 5000)
-                        }
-                    })
-                    clearInterval(time_interval);
-                }
-            }, 1000)
+        } catch (error) {
+            res.status(500).send("Internal Server Error");
+            console.log(error);
         }
     }
 })
 
 
 app.listen(port, () => {
-	console.log(`app is listening in this port http://localhost:${port}`)
-
+    console.log(`app is listening in this port http://localhost:${port}`)
 })
