@@ -23,6 +23,7 @@ const mainMenu = {
         keyboard: [
             ["PDF - Merge", "IMAGES to PDF"],
             ["DOCX to PDF", "PPTX to PDF"],
+            ["Excel to PDF"],
         ],
         resize_keyboard: true,
     },
@@ -88,7 +89,14 @@ bot.on("message", async (msg) => {
             userchoice[userId] = "pptx_pdf";
             bot.sendMessage(
                 chatId,
-                "Make PPT and PPTX slideshows easy t view by converting them to pdf .",
+                "Upload PPTX file only. Make PPT and PPTX slideshows easy t view by converting them to pdf .",
+                cancelMenu
+            );
+        } else if (text === "Excel to PDF") {
+            userchoice[userId] = "excel_pdf";
+            bot.sendMessage(
+                chatId,
+                "Upload EXCEL file only. Make EXCEL spreadsheet east to read by converting yhem to PDF.",
                 cancelMenu
             );
         } else if (text === "❌ Cancel") {
@@ -131,7 +139,7 @@ bot.on("message", async (msg) => {
             userphoto[userId].push({
                 fileid: photo_fileId,
                 url: photo_fileUrl,
-                name: `photo_pdf_${photo_fileId}_${Math.random() * 10}_.jpg`
+                name: `photo_pdf_${photo_fileId}_${Math.random() * 10}_${Date.now()}.jpg`
             });
         }
 
@@ -186,7 +194,7 @@ bot.on("message", async (msg) => {
                     await fs.promises.rm(download_dir, { recursive: true, force: true })
                 }
 
-            } else if (["merge_pdf", "docx_pdf", "pptx_pdf"].includes(userchoice[userId])) {
+            } else if (["merge_pdf", "docx_pdf", "pptx_pdf", "excel_pdf"].includes(userchoice[userId])) {
                 if (userfiles[userId].length === 0) {
                     return bot.sendMessage(chatId, "Please upload file.", mainMenu);
                 }
@@ -211,6 +219,19 @@ bot.on("message", async (msg) => {
                             bot.sendMessage(chatId, `❌ (${element.name}) is not a PPT file.`);
                             continue;
                         }
+                    } else if (userchoice[userId] === "excel_pdf") {
+                        if (![
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ,
+                            "application/vnd.ms-excel.sheet.macroEnabled.12",
+                            "application/vnd.ms-excel.sheet.binary.macroEnabled.12",
+                            "application/vnd.ms-excel",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+                            "application/vnd.ms-excel.template.macroEnabled.12",
+                            "text/csv"
+                        ].includes(element.mime)) {
+                            bot.sendMessage(chatId, `❌ (${element.name}) is not a Excel file.`);
+                            continue;
+                        }
                     }
 
                     const localFilePath = path.join(download_dir, element.name);
@@ -220,39 +241,30 @@ bot.on("message", async (msg) => {
                     download_file[userId].push(localFilePath);
                 }
 
-                if (userchoice[userId] === "merge_pdf") {
-                    for (const f of download_file[userId]) {
-                        formData.append("files", fs.createReadStream(f));
-                    }
-                } else if (userchoice[userId] === "docx_pdf") {
-                    for (const f of download_file[userId]) {
-                        formData.append("docx_pdf", fs.createReadStream(f));
-                    }
-                } else if (userchoice[userId] === "pptx_pdf") {
-                    for (const f of download_file[userId]) {
-                        formData.append("files", fs.createReadStream(f));
-                    }
+                for (const f of download_file[userId]) {
+                    formData.append("files", fs.createReadStream(f));
                 }
 
                 try {
+                    let office_filename;
+                    if (userchoice[userId] === "docx_pdf") {
+                        office_filename = "docx to pdf_convert";
+                    } else if (userchoice[userId] === "pptx_pdf") {
+                        office_filename = "pptx to pdf_convert";
+                    } else if (userchoice[userId] === "excel_pdf") {
+                        office_filename = "excel to pdf_convert";
+                    }
+
                     if (userchoice[userId] === "merge_pdf") {
                         endpoint = `${process.env.server_api}/merge`;
                         outputFilePath = path.join(download_dir, `Merged_${Date.now()}.pdf`);
 
-                    } else if (userchoice[userId] === "docx_pdf") {
-                        endpoint = `${process.env.server_api}/docxtopdf`;
+                    } else if (["docx_pdf", "pptx_pdf", "excel_pdf"].includes(userchoice[userId])) {
+                        endpoint = `${process.env.server2_api}/office-to-pdf_converter`;
                         if (download_file[userId].length >= 2) {
-                            outputFilePath = path.join(download_dir, `Docx_to_PDF_${Date.now()}.zip`);
+                            outputFilePath = path.join(download_dir, `${office_filename}_${Date.now()}.zip`);
                         } else {
-                            outputFilePath = path.join(download_dir, `Docx_to_PDF_${Date.now()}.pdf`);
-                        }
-
-                    } else if (userchoice[userId] === "pptx_pdf") {
-                        endpoint = `${process.env.Server2_api}/office-to-pdf_converter`;
-                        if (download_file[userId].length >= 2) {
-                            outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.zip`);
-                        } else {
-                            outputFilePath = path.join(download_dir, `ppt to pdf convert_${Date.now()}.pdf`);
+                            outputFilePath = path.join(download_dir, `${office_filename}_${Date.now()}.pdf`);
                         }
                     }
 
@@ -280,7 +292,7 @@ bot.on("message", async (msg) => {
                     await fs.promises.rm(download_dir, { recursive: true, force: true })
                 }
 
-            } 
+            }
         }
 
     } catch (error) {
@@ -288,4 +300,3 @@ bot.on("message", async (msg) => {
         bot.sendMessage(msg.chat.id, "⚠️ Error processing files.", mainMenu);
     }
 });
-
