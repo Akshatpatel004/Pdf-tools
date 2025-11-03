@@ -1,7 +1,7 @@
 const express = require('express')
 require("dotenv").config();
-const path = require('path')
 const app = express()
+const path = require('path')
 const fs = require('fs');
 const multer = require('multer')
 const upload = multer({ dest: 'Uploads' })
@@ -44,7 +44,10 @@ function cre_dir() {
 // 	archive.finalize();
 // }
 
-app.gey('/', async (req, res) => {req.send("bot is alive")});
+app.get('/', async (req, res) => {
+	cre_dir()
+	res.send("bot is alive");
+})
 
 app.post('/merge', upload.any(), async (req, res) => {
 	if (!req.files || req.files.length === 0) {
@@ -129,6 +132,4 @@ app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
 
-
 require('./client_bot')
-
