@@ -12,8 +12,8 @@
   "type": "commonjs",
   "dependencies": {
     "archiver": "^7.0.1",
-    "compress-pdf": "^0.5.5",
     "express": "^5.1.0",
+    "libreoffice-convert": "^1.7.0",
     "multer": "^2.0.2",
     "office-to-pdf": "^4.0.0"
   }
