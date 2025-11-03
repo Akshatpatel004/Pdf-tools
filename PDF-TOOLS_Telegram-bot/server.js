@@ -44,7 +44,7 @@ function cre_dir() {
 // 	archive.finalize();
 // }
 
-app.post('/', async (req, res) => {req.send("bot is alive")});
+app.gey('/', async (req, res) => {req.send("bot is alive")});
 
 app.post('/merge', upload.any(), async (req, res) => {
 	if (!req.files || req.files.length === 0) {
@@ -131,3 +131,4 @@ app.listen(port, () => {
 
 
 require('./client_bot')
+
