@@ -1,17 +1,15 @@
-const express = require('express')
+portploads'ploads'nst express = require('express')
 require("dotenv").config();
 const app = express()
 const path = require('path')
 const fs = require('fs');
 const multer = require('multer')
-const upload = multer({ dest: 'Uploads' })
+const upload = multer({ dest: 'Uploads/' })
 const port = process.env.port;
 
 // const archiver = require('archiver');
 const { convert, sizes } = require("image-to-pdf");
 const PDFMerger = require('pdf-merger-js');
-var merger = new PDFMerger();
-
 
 const main_dir = ["Download/Merge pdf/", "Download/docx to pdf/", "Download/image_pdf/", "Download/temp_pdf/", "Download/pdf_png/", "Download/ppt_pdf/"];
 function cre_dir() {
@@ -57,6 +55,7 @@ app.post('/merge', upload.any(), async (req, res) => {
 		cre_dir()
 		console.log(req.files.length, req.files);
 		const pdf_merge_outputPath = `Download/Merge pdf/Merged_${Date.now()}.pdf`;
+		const merger = new PDFMerger();
 		try {
 			for (let file of req.files) {
 				await merger.add(file.path);
@@ -131,5 +130,6 @@ app.post("/imagetopdf", upload.any(), async (req, res) => {
 app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
+
 
 require('./client_bot')
