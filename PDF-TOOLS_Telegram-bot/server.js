@@ -1,4 +1,4 @@
-portploads'ploads'nst express = require('express')
+const express = require('express')
 require("dotenv").config();
 const app = express()
 const path = require('path')
@@ -10,6 +10,7 @@ const port = process.env.port;
 // const archiver = require('archiver');
 const { convert, sizes } = require("image-to-pdf");
 const PDFMerger = require('pdf-merger-js');
+
 
 const main_dir = ["Download/Merge pdf/", "Download/docx to pdf/", "Download/image_pdf/", "Download/temp_pdf/", "Download/pdf_png/", "Download/ppt_pdf/"];
 function cre_dir() {
@@ -52,30 +53,32 @@ app.post('/merge', upload.any(), async (req, res) => {
 		console.log("no files uploaded");
 		return res.status(400).send("no files uploaded")
 	} else {
-		cre_dir()
-		console.log(req.files.length, req.files);
-		const pdf_merge_outputPath = `Download/Merge pdf/Merged_${Date.now()}.pdf`;
-		const merger = new PDFMerger();
-		try {
+       try {
+		   cre_dir()
+		   console.log(req.files.length, req.files);
+		   const pdf_merge_outputPath = `Download/Merge pdf/Merged_${Date.now()}.pdf`;
+		   const merger = new PDFMerger();
+	
 			for (let file of req.files) {
 				await merger.add(file.path);
 			}
 			await merger.save(pdf_merge_outputPath);
 			await merger.reset();
+			await res.download(pdf_merge_outputPath, (err) => {
+				if (err) {
+					console.error("Error sending file:", err);
+					res.status(500).send("Error sending file.");
+				} else {
+					setTimeout(() => {
+						fs.unlinkSync(pdf_merge_outputPath);
+						req.files.forEach((file) => fs.unlinkSync(file.path));
+					}, 5000)
+				}
+			});
 		} catch (error) {
 			console.log(error);
+			res.status(500).send("Internal Server Error");
 		}
-		await res.download(pdf_merge_outputPath, (err) => {
-			if (err) {
-				console.error("Error sending file:", err);
-				res.status(500).send("Error sending file.");
-			} else {
-				setTimeout(() => {
-					fs.unlinkSync(pdf_merge_outputPath);
-					req.files.forEach((file) => fs.unlinkSync(file.path));
-				}, 5000)
-			}
-		});
 
 	}
 })
@@ -130,6 +133,5 @@ app.post("/imagetopdf", upload.any(), async (req, res) => {
 app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
-
 
 require('./client_bot')
