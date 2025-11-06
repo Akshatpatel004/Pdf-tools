@@ -5,11 +5,12 @@ const fs = require('fs');
 const multer = require('multer')
 const upload = multer({ dest: 'Uploads' })
 const port = 3000;
-
 let toPdf = require('office-to-pdf');
 const archiver = require('archiver');
+const { exec } = require("child_process");
 
-const main_dir = ["Download/Office_PDF/", "Download/temp_pdf/"];
+
+const main_dir = ["Download/Office_PDF/", "Download/compress-pdf/", "Download/temp_pdf/"];
 function cre_dir() {
     for (let dir of main_dir) {
         if (!fs.existsSync(dir)) {
@@ -55,7 +56,7 @@ function compress_file(files, save_path, msg) {
 
 app.get('/', async (req, res) => {
     cre_dir()
-    res.send("office-to-pdf_libreoffice server is alive")
+    res.send("office-to-pdf_libreoffice server is alive");
 });
 
 app.post('/office-to-pdf_converter', upload.any(), async (req, res) => {
@@ -119,8 +120,118 @@ app.post('/office-to-pdf_converter', upload.any(), async (req, res) => {
     }
 })
 
+app.post('/compress-pdf_size', upload.any(), async (req, res) => {
+    if (!req.files || req.files.length === 0) {
+        console.log("no files uploaded");
+        return res.status(400).send("no files uploaded")
+    } else {
+        cre_dir()
+        console.log(req.files)
+        try {
+            let docxtopdf_outputfilepath = ['Download/compress-pdf/' + req.files.originalname + Date.now() + ".pdf", `Download/compress-pdf/${Date.now()}.zip`];
+            if (req.files.length === 1) {
+
+                const gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
+    -dPDFSETTINGS=/screen \
+    -dDownsampleColorImages=true -dColorImageResolution=75 \
+    -dNOPAUSE -dQUIET -dBATCH \
+    -sOutputFile=${docxtopdf_outputfilepath[0]} ${req.files[0].path}`;
+
+                exec(gsCommand, (error, stdout, stderr) => {
+                    if (error) {
+                        setTimeout(() => {
+                            fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            req.files.forEach((file) => fs.unlinkSync(file.path));
+                        }, 5000)
+                        return console.error("Ghostscript Error:", error.message);
+                    }
+                    console.log("Ghostscript Output:", stderr || stdout);
+
+                    if (!fs.existsSync(docxtopdf_outputfilepath[0])) {
+                        setTimeout(() => {
+                            fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            req.files.forEach((file) => fs.unlinkSync(file.path));
+                        }, 5000)
+                        return res.status(400).send("No compress file created");
+                    }
+
+                    res.download(docxtopdf_outputfilepath[0], (err) => {
+                        if (err) {
+                            console.log(err);
+                            fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            req.files.forEach((file) => fs.unlinkSync(file.path));
+                        } else {
+                            setTimeout(() => {
+                                fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                                req.files.forEach((file) => fs.unlinkSync(file.path));
+                            }, 5000)
+                        }
+                    })
+                })
+
+            } else if (req.files.length > 1) {
+                let pdfpath_array = [];
+                for (let fil of req.files) {
+                    const doc_pdfpath = path.join('Download/temp_pdf', req.files.originalname + Date.now() + ".pdf");
+                    const gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
+                    -dPDFSETTINGS=/screen \
+                    -dDownsampleColorImages=true -dColorImageResolution=75 \
+                    -dNOPAUSE -dQUIET -dBATCH \
+                    -sOutputFile=${doc_pdfpath} ${fil.path}`;
+
+
+                    exec(gsCommand, (error, stdout, stderr) => {
+                        if (error) {
+                            setTimeout(() => {
+                                fs.unlinkSync(doc_pdfpath);
+                                req.files.forEach((file) => fs.unlinkSync(file.path));
+                            }, 5000)
+                            return console.error("Ghostscript Error:", error.message);
+                        }
+                        console.log("Ghostscript Output:", stderr || stdout);
+    
+                        if (!fs.existsSync(doc_pdfpath)) {
+                            setTimeout(() => {
+                                fs.unlinkSync(doc_pdfpath);
+                                req.files.forEach((file) => fs.unlinkSync(file.path));
+                            }, 5000)
+                            return res.status(400).send("No compress file created");
+                        }
+                        pdfpath_array.push(doc_pdfpath);
+                    })    
+
+                }
+
+                compress_file(pdfpath_array, docxtopdf_outputfilepath[1], "Standard");
+                let time_interval = setInterval(() => {
+                    if (fs.existsSync(docxtopdf_outputfilepath[1])) {
+                        res.download(docxtopdf_outputfilepath[1], (err) => {
+                            if (err) {
+                                console.log(err);
+                                fs.unlinkSync(docxtopdf_outputfilepath[1]);
+                                req.files.forEach((file) => fs.unlinkSync(file.path));
+                                pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
+                            } else {
+                                setTimeout(() => {
+                                    fs.unlinkSync(docxtopdf_outputfilepath[1]);
+                                    req.files.forEach((file) => fs.unlinkSync(file.path));
+                                    pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
+                                }, 5000)
+                            }
+                        })
+                        clearInterval(time_interval);
+                    }
+                }, 1000)
+                
+            }
+        } catch (error) {
+            res.status(500).send("Internal Server Error");
+            console.log(error);
+        }
+    }
+})
+
 
 app.listen(port, () => {
     console.log(`app is listening in this port http://localhost:${port}`)
-
 })
