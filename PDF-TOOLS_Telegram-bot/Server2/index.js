@@ -8,8 +8,6 @@ const port = 3000;
 let toPdf = require('office-to-pdf');
 const archiver = require('archiver');
 const { exec } = require("child_process");
-const { error } = require('console');
-const { stderr, stdout } = require('process');
 
 
 const main_dir = ["Download/Office_PDF/", "Download/compress-pdf/", "Download/temp_pdf/"];
@@ -123,7 +121,7 @@ app.post('/office-to-pdf_converter', upload.any(), async (req, res) => {
 })
 
 app.post('/compress-pdf_size', upload.any(), async (req, res) => {
-    // const filepath = `"C:/Program Files/gs/gs10.06.0/bin/gswin64c.exe"`;
+    const filepath = `"C:/Program Files/gs/gs10.06.0/bin/gswin64c.exe"`;
     if (!req.files || req.files.length === 0) {
         console.log("no files uploaded");
         return res.status(400).send("no files uploaded")
@@ -136,6 +134,7 @@ app.post('/compress-pdf_size', upload.any(), async (req, res) => {
 
                 const gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
                 -dPDFSETTINGS=/screen \
+                -dDownsampleColorImages=true -dColorImageResolution=75 \
                 -dNOPAUSE -dQUIET -dBATCH \
                 -sOutputFile=${docxtopdf_outputfilepath[0]} ${req.files[0].path}`;
 
