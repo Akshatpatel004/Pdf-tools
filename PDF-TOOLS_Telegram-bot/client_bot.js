@@ -23,7 +23,7 @@ const mainMenu = {
         keyboard: [
             ["PDF - Merge", "IMAGES to PDF"],
             ["DOCX to PDF", "PPTX to PDF"],
-            ["Excel to PDF"],
+            ["Excel to PDF" , "Compress PDF Size"],
         ],
         resize_keyboard: true,
     },
@@ -97,6 +97,13 @@ bot.on("message", async (msg) => {
             bot.sendMessage(
                 chatId,
                 "Upload EXCEL file only. Make EXCEL spreadsheet east to read by converting yhem to PDF.",
+                cancelMenu
+            );
+        }else if (text === "Compress PDF Size") {
+            userchoice[userId] = "compress-pdf_size";
+            bot.sendMessage(
+                chatId,
+                "Upload PDF file only. Reduce PDF file size while optimizing for maximal PDF quality .",
                 cancelMenu
             );
         } else if (text === "❌ Cancel") {
@@ -194,7 +201,8 @@ bot.on("message", async (msg) => {
                     await fs.promises.rm(download_dir, { recursive: true, force: true })
                 }
 
-            } else if (["merge_pdf", "docx_pdf", "pptx_pdf", "excel_pdf"].includes(userchoice[userId])) {
+            } else {
+                // else if (["merge_pdf", "docx_pdf", "pptx_pdf", "excel_pdf"].includes(userchoice[userId])) {
                 if (userfiles[userId].length === 0) {
                     return bot.sendMessage(chatId, "Please upload file.", mainMenu);
                 }
@@ -204,19 +212,19 @@ bot.on("message", async (msg) => {
                 waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.", mainMenu);
 
                 for (const element of userfiles[userId]) {
-                    if (userchoice[userId] === "merge_pdf") {
+                    if (["merge_pdf", "compress-pdf_size"].includes(userchoice[userId])) {
                         if (element.mime !== "application/pdf") {
-                            bot.sendMessage(chatId, `❌ (${element.name}) is not a PDF file.`);
+                            bot.sendMessage(chatId, `⚠️ (${element.name}) is not a PDF file.`);
                             continue;
                         }
                     } else if (userchoice[userId] === "docx_pdf") {
                         if (element.mime !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-                            bot.sendMessage(chatId, `❌ (${element.name}) is not a docx file.`);
+                            bot.sendMessage(chatId, `⚠️ (${element.name}) is not a docx file.`);
                             continue;
                         }
                     } else if (userchoice[userId] === "pptx_pdf") {
                         if (element.mime !== "application/vnd.openxmlformats-officedocument.presentationml.presentation") {
-                            bot.sendMessage(chatId, `❌ (${element.name}) is not a PPT file.`);
+                            bot.sendMessage(chatId, `⚠️ (${element.name}) is not a PPT file.`);
                             continue;
                         }
                     } else if (userchoice[userId] === "excel_pdf") {
@@ -229,7 +237,7 @@ bot.on("message", async (msg) => {
                             "application/vnd.ms-excel.template.macroEnabled.12",
                             "text/csv"
                         ].includes(element.mime)) {
-                            bot.sendMessage(chatId, `❌ (${element.name}) is not a Excel file.`);
+                            bot.sendMessage(chatId, `⚠️ (${element.name}) is not a Excel file.`);
                             continue;
                         }
                     }
@@ -255,6 +263,7 @@ bot.on("message", async (msg) => {
                         office_filename = "excel to pdf_convert";
                     }
 
+                    
                     if (userchoice[userId] === "merge_pdf") {
                         endpoint = `${process.env.server_api}/merge`;
                         outputFilePath = path.join(download_dir, `Merged_${Date.now()}.pdf`);
@@ -266,6 +275,13 @@ bot.on("message", async (msg) => {
                         } else {
                             outputFilePath = path.join(download_dir, `${office_filename}_${Date.now()}.pdf`);
                         }
+                    }else if (userchoice[userId] === "compress-pdf_size") {
+                        endpoint = `${process.env.server2_api}/compress-pdf_size`;
+                        if (download_file[userId].length >= 2) {
+                            outputFilePath = path.join(download_dir, `compress-pdf_size_${Date.now()}.zip`);
+                        } else {
+                            outputFilePath = path.join(download_dir, `compress-pdf_size_${Date.now()}.pdf`);
+                        }
                     }
 
                     const serverResponse = await axios.post(endpoint, formData, {
@@ -273,6 +289,9 @@ bot.on("message", async (msg) => {
                         responseType: "arraybuffer"
                     });
 
+                    if (response.ok) {
+                        console.log("server response is ok");
+                    }
                     fs.writeFileSync(outputFilePath, serverResponse.data);
                     await bot.deleteMessage(chatId, waitMsg.message_id);
                     await bot.sendDocument(chatId, outputFilePath, {}, { contentType: "application/pdf" });
