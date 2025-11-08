@@ -201,8 +201,7 @@ bot.on("message", async (msg) => {
                     await fs.promises.rm(download_dir, { recursive: true, force: true })
                 }
 
-            } else {
-                // else if (["merge_pdf", "docx_pdf", "pptx_pdf", "excel_pdf"].includes(userchoice[userId])) {
+            } else if (["merge_pdf", "docx_pdf", "pptx_pdf", "excel_pdf" ,"compress-pdf_size"].includes(userchoice[userId])) {
                 if (userfiles[userId].length === 0) {
                     return bot.sendMessage(chatId, "Please upload file.", mainMenu);
                 }
@@ -319,3 +318,4 @@ bot.on("message", async (msg) => {
         bot.sendMessage(msg.chat.id, "⚠️ Error processing files.", mainMenu);
     }
 });
+
