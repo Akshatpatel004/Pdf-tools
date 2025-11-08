@@ -8,6 +8,8 @@ const port = 3000;
 let toPdf = require('office-to-pdf');
 const archiver = require('archiver');
 const { exec } = require("child_process");
+const { error } = require('console');
+const { stderr, stdout } = require('process');
 
 
 const main_dir = ["Download/Office_PDF/", "Download/compress-pdf/", "Download/temp_pdf/"];
@@ -121,26 +123,27 @@ app.post('/office-to-pdf_converter', upload.any(), async (req, res) => {
 })
 
 app.post('/compress-pdf_size', upload.any(), async (req, res) => {
+    // const filepath = `"C:/Program Files/gs/gs10.06.0/bin/gswin64c.exe"`;
     if (!req.files || req.files.length === 0) {
         console.log("no files uploaded");
         return res.status(400).send("no files uploaded")
     } else {
         cre_dir()
-        console.log(req.files)
+        console.log(req.files.length, req.files)
         try {
-            let docxtopdf_outputfilepath = ['Download/compress-pdf/' + req.files.originalname + Date.now() + ".pdf", `Download/compress-pdf/${Date.now()}.zip`];
+            let docxtopdf_outputfilepath = [`Download/compress-pdf/compress-pdf_size_${Date.now()}.pdf`, `Download/compress-pdf/${Date.now()}.zip`];
             if (req.files.length === 1) {
 
                 const gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
-    -dPDFSETTINGS=/screen \
-    -dDownsampleColorImages=true -dColorImageResolution=75 \
-    -dNOPAUSE -dQUIET -dBATCH \
-    -sOutputFile=${docxtopdf_outputfilepath[0]} ${req.files[0].path}`;
+                -dPDFSETTINGS=/screen \
+                -dNOPAUSE -dQUIET -dBATCH \
+                -sOutputFile=${docxtopdf_outputfilepath[0]} ${req.files[0].path}`;
 
                 exec(gsCommand, (error, stdout, stderr) => {
                     if (error) {
                         setTimeout(() => {
-                            fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            // fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            fs.promises.rm(main_dir[1], { recursive: true, force: true })
                             req.files.forEach((file) => fs.unlinkSync(file.path));
                         }, 5000)
                         return console.error("Ghostscript Error:", error.message);
@@ -149,7 +152,8 @@ app.post('/compress-pdf_size', upload.any(), async (req, res) => {
 
                     if (!fs.existsSync(docxtopdf_outputfilepath[0])) {
                         setTimeout(() => {
-                            fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            // fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            fs.promises.rm(main_dir[1], { recursive: true, force: true })
                             req.files.forEach((file) => fs.unlinkSync(file.path));
                         }, 5000)
                         return res.status(400).send("No compress file created");
@@ -158,11 +162,13 @@ app.post('/compress-pdf_size', upload.any(), async (req, res) => {
                     res.download(docxtopdf_outputfilepath[0], (err) => {
                         if (err) {
                             console.log(err);
-                            fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            // fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                            fs.promises.rm(main_dir[1], { recursive: true, force: true })
                             req.files.forEach((file) => fs.unlinkSync(file.path));
                         } else {
                             setTimeout(() => {
-                                fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                                // fs.unlinkSync(docxtopdf_outputfilepath[0]);
+                                fs.promises.rm(main_dir[1], { recursive: true, force: true })
                                 req.files.forEach((file) => fs.unlinkSync(file.path));
                             }, 5000)
                         }
@@ -171,58 +177,60 @@ app.post('/compress-pdf_size', upload.any(), async (req, res) => {
 
             } else if (req.files.length > 1) {
                 let pdfpath_array = [];
-                for (let fil of req.files) {
-                    const doc_pdfpath = path.join('Download/temp_pdf', req.files.originalname + Date.now() + ".pdf");
+                let con = 0;
+                await req.files.forEach((fil) => {
+                    const doc_pdfpath = path.join('Download/temp_pdf', `compressed_${Date.now()}.pdf`);
                     const gsCommand = `gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 \
-                    -dPDFSETTINGS=/screen \
-                    -dDownsampleColorImages=true -dColorImageResolution=75 \
-                    -dNOPAUSE -dQUIET -dBATCH \
-                    -sOutputFile=${doc_pdfpath} ${fil.path}`;
+                        -dPDFSETTINGS=/screen \
+                        -dDownsampleColorImages=true -dColorImageResolution=75 \
+                        -dNOPAUSE -dQUIET -dBATCH \
+                        -sOutputFile="${doc_pdfpath}" "${fil.path}"`;
 
-
-                    exec(gsCommand, (error, stdout, stderr) => {
+                    exec(gsCommand, (error, stderr, stdout) => {
                         if (error) {
                             setTimeout(() => {
-                                fs.unlinkSync(doc_pdfpath);
                                 req.files.forEach((file) => fs.unlinkSync(file.path));
                             }, 5000)
                             return console.error("Ghostscript Error:", error.message);
                         }
                         console.log("Ghostscript Output:", stderr || stdout);
-    
-                        if (!fs.existsSync(doc_pdfpath)) {
-                            setTimeout(() => {
-                                fs.unlinkSync(doc_pdfpath);
-                                req.files.forEach((file) => fs.unlinkSync(file.path));
-                            }, 5000)
-                            return res.status(400).send("No compress file created");
-                        }
                         pdfpath_array.push(doc_pdfpath);
-                    })    
+                        con = con + 1;
+                    })
+                });
 
-                }
+                let zip_time = setInterval(() => {
+                    if (con === req.files.length) {
+                        clearInterval(zip_time);
+                        setTimeout(() => {
+                            compress_file(pdfpath_array, docxtopdf_outputfilepath[1], "Standard");
+                            let time_interval = setInterval(() => {
+                                if (fs.existsSync(docxtopdf_outputfilepath[1])) {
+                                    res.download(docxtopdf_outputfilepath[1], (err) => {
+                                        if (err) {
+                                            console.log(err);
+                                            // fs.unlinkSync(docxtopdf_outputfilepath[1]);
+                                            fs.promises.rm(main_dir[1], { recursive: true, force: true })
+                                            req.files.forEach((file) => fs.unlinkSync(file.path));
+                                            pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
 
-                compress_file(pdfpath_array, docxtopdf_outputfilepath[1], "Standard");
-                let time_interval = setInterval(() => {
-                    if (fs.existsSync(docxtopdf_outputfilepath[1])) {
-                        res.download(docxtopdf_outputfilepath[1], (err) => {
-                            if (err) {
-                                console.log(err);
-                                fs.unlinkSync(docxtopdf_outputfilepath[1]);
-                                req.files.forEach((file) => fs.unlinkSync(file.path));
-                                pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
-                            } else {
-                                setTimeout(() => {
-                                    fs.unlinkSync(docxtopdf_outputfilepath[1]);
-                                    req.files.forEach((file) => fs.unlinkSync(file.path));
-                                    pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
-                                }, 5000)
-                            }
-                        })
-                        clearInterval(time_interval);
+                                        } else {
+                                            setTimeout(() => {
+                                                // fs.unlinkSync(docxtopdf_outputfilepath[1]);
+                                                fs.promises.rm(main_dir[1], { recursive: true, force: true })
+                                                req.files.forEach((file) => fs.unlinkSync(file.path));
+                                                pdfpath_array.forEach((pdf) => fs.unlinkSync(pdf));
+                                            }, 5000)
+                                        }
+                                    })
+                                    clearInterval(time_interval);
+                                }
+                            }, 1000)
+
+                        }, 2000)
                     }
                 }, 1000)
-                
+
             }
         } catch (error) {
             res.status(500).send("Internal Server Error");
