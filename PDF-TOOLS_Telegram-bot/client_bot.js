@@ -25,6 +25,7 @@ async function clearDirectoryItem(userId) {
         }
     }
     userfiles[userId] = [];
+    userphoto[userId] = [];
     download_file[userId] = [];
     userchoice[userId] = null;
     userchoice2[userId] = null;
