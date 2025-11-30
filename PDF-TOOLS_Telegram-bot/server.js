@@ -6,13 +6,14 @@ const fs = require('fs');
 const multer = require('multer')
 const upload = multer({ dest: 'Uploads/' })
 const port = process.env.port;
+// const { spawn } = require("child_process");
 
 // const archiver = require('archiver');
 const { convert, sizes } = require("image-to-pdf");
 const PDFMerger = require('pdf-merger-js');
 
 
-const main_dir = ["Download/Merge pdf/", "Download/docx to pdf/", "Download/image_pdf/", "Download/temp_pdf/", "Download/pdf_png/", "Download/ppt_pdf/"];
+const main_dir = ["Download/Merge pdf/", "Download/image_pdf/", "Download/temp_pdf/"];
 function cre_dir() {
 	for (let dir of main_dir) {
 		if (!fs.existsSync(dir)) {
@@ -53,12 +54,11 @@ app.post('/merge', upload.any(), async (req, res) => {
 		console.log("no files uploaded");
 		return res.status(400).send("no files uploaded")
 	} else {
-       try {
-		   cre_dir()
-		   console.log(req.files.length, req.files);
-		   const pdf_merge_outputPath = `Download/Merge pdf/Merged_${Date.now()}.pdf`;
-		   const merger = new PDFMerger();
-	
+		try {
+			cre_dir()
+			console.log(req.files.length, req.files);
+			const pdf_merge_outputPath = `Download/Merge pdf/Merged_${Date.now()}.pdf`;
+			const merger = new PDFMerger();
 			for (let file of req.files) {
 				await merger.add(file.path);
 			}
@@ -79,7 +79,6 @@ app.post('/merge', upload.any(), async (req, res) => {
 			console.log(error);
 			res.status(500).send("Internal Server Error");
 		}
-
 	}
 })
 
@@ -125,6 +124,7 @@ app.post("/imagetopdf", upload.any(), async (req, res) => {
 			});
 		});
 	} catch (error) {
+		console.log(error);
 		res.status(500).send("Internal Server Error");
 	}
 })
