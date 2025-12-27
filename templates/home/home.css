@@ -33,7 +33,8 @@ label{
 }
 .content-box{
     overflow-y: auto;
-    height: 535px;
+    height: 572px;
+    /* height: max-content; */
 }
 .contents{
     display: flex;
