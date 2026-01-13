@@ -1,21 +1,15 @@
-FROM node:18
+FROM node:20
+
+# Install Ghostscript and LibreOffice (required for office-to-pdf)
+RUN apt-get update && apt-get install -y \
+    ghostscript \
+    libreoffice \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-
-RUN apt-get update && \
-    apt-get install -y libreoffice ghostscript && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-
 COPY package*.json ./
-
 RUN npm install
-
 COPY . .
 
 EXPOSE 3000
-
 CMD ["node", "index.js"]
-
-
-
