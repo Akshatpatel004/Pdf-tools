@@ -5,7 +5,7 @@ const path = require('path')
 const fs = require('fs');
 const multer = require('multer')
 const upload = multer({ dest: 'Uploads/' })
-const port = process.env.port;
+const port = process.env.port || 3000;
 // const { spawn } = require("child_process");
 
 // const archiver = require('archiver');
@@ -134,4 +134,4 @@ app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
 
-require('./client_bot')
+// require('./client_bot')
