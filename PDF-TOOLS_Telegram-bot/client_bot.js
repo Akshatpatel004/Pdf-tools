@@ -244,7 +244,7 @@ bot.on("message", async (msg) => {
                 waitMsg = await bot.sendMessage(chatId, "Please wait few minutes ⌚ for server response.", mainMenu);
 
                 for (const element of userfiles[userId]) {
-                    if (userchoice[userId] === "merge_pdf" || "compress_pdf_size") {
+                    if (userchoice[userId] === "merge_pdf" || userchoice[userId] ==="compress_pdf_size") {
                         if (element.mime !== "application/pdf") {
                             bot.sendMessage(chatId, `❌ (${element.name}) is not a PDF file.`);
                             continue;
