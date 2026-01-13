@@ -8,8 +8,8 @@ const fs = require("fs");
 const path = require("path");
 const bot = new TelegramBot(process.env.telegram_bot_api, { polling: true });
 const download_dir = path.join(__dirname, "bot_download");
-const User = require("./schema/user_schema");
-const ADMIN_CHAT_ID = Number(process.env.ADMIN_CHAT_ID);
+// const User = require("./schema/user_schema");
+// const ADMIN_CHAT_ID = Number(process.env.ADMIN_CHAT_ID);
 
 // (async()=>{
 // 	await connectdb();
