@@ -1,5 +1,4 @@
 require("dotenv").config();
-// const connectdb = require('./db/mongodb');
 const TelegramBot = require("node-telegram-bot-api");
 const axios = require("axios");
 const fetch = require('node-fetch');
@@ -8,12 +7,6 @@ const fs = require("fs");
 const path = require("path");
 const bot = new TelegramBot(process.env.telegram_bot_api, { polling: true });
 const download_dir = path.join(__dirname, "bot_download");
-// const User = require("./schema/user_schema");
-// const ADMIN_CHAT_ID = Number(process.env.ADMIN_CHAT_ID);
-
-// (async()=>{
-// 	await connectdb();
-// })();
 
 function cre_dir() {
     if (!fs.existsSync(download_dir)) fs.mkdirSync(download_dir);
@@ -32,27 +25,11 @@ async function clearDirectoryItem(userId) {
         }
     }
     userfiles[userId] = [];
+    userphoto[userId] = [];
     download_file[userId] = [];
     userchoice[userId] = null;
     userchoice2[userId] = null;
 }
-
-// async function add_user(chatid , username , first_name) {
-//     try {
-//         let user = await User.findOne({ chatId: chatid});
-//         if (user) {
-//             return
-//         } else {
-//             user = await User.create({
-//                 chatId: chatid,
-//                 username: username || "",
-//                 firstName: first_name || "",
-//             });
-//         }
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
 
 let userchoice = {};
 let userchoice2 = {};
@@ -63,7 +40,7 @@ let download_file = {};
 const mainMenu = {
     reply_markup: {
         keyboard: [
-            ["PDF - Merge", "Compress PDF Size"],
+            ["PDF - Merge" , "Compress PDF Size"],
             ["DOCX to PDF", "PPTX to PDF"],
             ["Excel to PDF", "IMAGES to PDF"],
         ],
@@ -78,7 +55,6 @@ const cancelMenu = {
 };
 
 bot.on("message", async (msg) => {
-    // add_user(msg.chat.id , msg.chat.username , msg.chat.first_name);
     cre_dir();
     try {
         const userId = await msg.from.id;
@@ -96,16 +72,6 @@ bot.on("message", async (msg) => {
             download_file[userId] = [];
         }
 
-        // if (chatId !== ADMIN_CHAT_ID) {
-        //     return
-        // } else if (chatId === ADMIN_CHAT_ID && msg.text.startsWith("/broadcast")) {
-        //     const broadcastMsg = text.replace("/broadcast", "").trim();
-        //     const chatIds = await User.distinct("chatId");
-        //     for (const chatId of chatIds) {
-        //         await bot.sendMessage(chatId, broadcastMsg);
-        //     }
-        // }
-        
         if (text === "/start") {
             bot.sendMessage(chatId, "Welcome to PDF-Tools bot.", mainMenu);
             userchoice[userId] = null
@@ -152,14 +118,14 @@ bot.on("message", async (msg) => {
                 "Upload EXCEL file only. Make EXCEL spreadsheet east to read by converting yhem to PDF.",
                 cancelMenu
             );
-        } else if (text === "Compress PDF Size") {
+        }else if (text === "Compress PDF Size") {
             userchoice[userId] = "compress_pdf_size";
             bot.sendMessage(
                 chatId,
                 "Upload PDF file only. Reduce file size while optimizing for maximal PDF quality.",
                 cancelMenu
             );
-        } else if (text === "❌ Cancel") {
+        }else if (text === "❌ Cancel") {
             bot.sendMessage(chatId, "Cancelling.", mainMenu);
             userchoice[userId] = null
             userchoice2[userId] = null;
@@ -262,7 +228,7 @@ bot.on("message", async (msg) => {
                     }
                 }
 
-            } else if (["merge_pdf", "docx_pdf", "pptx_pdf", "excel_pdf", "compress_pdf_size"].includes(userchoice[userId])) {
+            } else if (["merge_pdf", "docx_pdf", "pptx_pdf", "excel_pdf" , "compress_pdf_size"].includes(userchoice[userId])) {
                 if (userfiles[userId].length === 0) {
                     setTimeout(() => {
                         userfiles[userId] = [];
@@ -340,12 +306,12 @@ bot.on("message", async (msg) => {
                         } else {
                             outputFilePath = path.join(download_dir, `${office_filename}_${Date.now()}.pdf`);
                         }
-                    } else if (userchoice[userId] === "compress_pdf_size") {
+                    }else if (userchoice[userId] === "compress_pdf_size") {
                         endpoint = `${process.env.server2_api}/compress-pdf_size`;
                         if (download_file[userId].length >= 2) {
-                            outputFilePath = path.join(download_dir, `Compressed_pdf_size_${Date.now()}.zip`);
+                            outputFilePath = path.join(download_dir, `compress_pdf_size_${Date.now()}.zip`);
                         } else {
-                            outputFilePath = path.join(download_dir, `Compressed_pdf_size_${Date.now()}.pdf`);
+                            outputFilePath = path.join(download_dir, `compress_pdf_size_${Date.now()}.pdf`);
                         }
                     }
 
