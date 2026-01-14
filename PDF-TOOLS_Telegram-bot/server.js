@@ -134,4 +134,5 @@ app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
 
-// require('./client_bot')
+
+require('./client_bot')
