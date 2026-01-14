@@ -5,7 +5,7 @@ const path = require('path')
 const fs = require('fs');
 const multer = require('multer')
 const upload = multer({ dest: 'Uploads/' })
-const port = process.env.port || 3000;
+const port = process.env.port;
 // const { spawn } = require("child_process");
 
 // const archiver = require('archiver');
@@ -133,6 +133,5 @@ app.post("/imagetopdf", upload.any(), async (req, res) => {
 app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
-
 
 require('./client_bot')
