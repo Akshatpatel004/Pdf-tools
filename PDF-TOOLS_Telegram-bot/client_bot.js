@@ -8,8 +8,6 @@ const path = require("path");
 const bot = new TelegramBot(process.env.telegram_bot_api, { polling: true });
 const download_dir = path.join(__dirname, "bot_download");
 
-console.log("bot is alive");
-
 function cre_dir() {
     if (!fs.existsSync(download_dir)) fs.mkdirSync(download_dir);
 }
@@ -120,7 +118,7 @@ bot.on("message", async (msg) => {
                 "Upload EXCEL file only. Make EXCEL spreadsheet east to read by converting yhem to PDF.",
                 cancelMenu
             );
-        }else if (text === "Compress PDF Size") {
+        } else if (text === "Compress PDF Size") {
             userchoice[userId] = "compress_pdf_size";
             bot.sendMessage(
                 chatId,
