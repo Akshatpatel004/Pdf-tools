@@ -5,10 +5,12 @@ const path = require('path')
 const fs = require('fs');
 const multer = require('multer')
 const upload = multer({ dest: 'Uploads/' })
-const port = process.env.port;
+const port = 3000;
 // const { spawn } = require("child_process");
-
 // const archiver = require('archiver');
+const cors = require("cors");
+
+app.use(cors());
 const { convert, sizes } = require("image-to-pdf");
 const PDFMerger = require('pdf-merger-js');
 
@@ -49,7 +51,7 @@ app.get('/', async (req, res) => {
 	res.send("bot is alive");
 })
 
-app.post('/merge', upload.any(), async (req, res) => {
+app.post('/merge_pdf', upload.any(), async (req, res) => {
 	if (!req.files || req.files.length === 0) {
 		console.log("no files uploaded");
 		return res.status(400).send("no files uploaded")
@@ -82,7 +84,7 @@ app.post('/merge', upload.any(), async (req, res) => {
 	}
 })
 
-app.post("/imagetopdf", upload.any(), async (req, res) => {
+app.post("/imagestopdf", upload.any(), async (req, res) => {
 	if (!req.files || req.files.length === 0) {
 		return res.status(400).send("no files uploaded");
 	}
@@ -134,4 +136,4 @@ app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
 
-require('./client_bot')
+require('./client_bot');
