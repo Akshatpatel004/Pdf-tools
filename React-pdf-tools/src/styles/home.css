@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+body {
+    background-color: #f8f9fa; 
+    font-family: 'Inter', sans-serif;
+}
+
+.tool-card {
+    border-radius: 16px !important;
+    background: #ffffff;
+    border: 2px solid #000000 !important; /* Locked black border */
+    height: 250px !important; /* Locked height */
+    width: 100%; /* Adjusts to grid width automatically */
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.tool-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer;
+}
+
+.card-body {
+    padding: 24px !important;
+    text-align: left;
+}
+
+.tool-icon {
+    width: 70px; /* Icon height +5px */
+    height: 70px;
+    margin-bottom: 20px !important;
+    object-fit: cover;
+}
+
+.card-title {
+    font-size: 1.4rem !important;
+    font-weight: 700;
+    margin-bottom: 0px !important;
+}
+
+.card-text {
+    font-size: 0.95rem !important;
+    color: #6c757d;
+    margin-top: 15px !important; /* Pushes description from top */
+    line-height: 1.5;
+}
+
+
+/* ... keep all your previous tool-card CSS here ... */
+
+/* Extra Large Screen (TV) Adjustment */
+@media (min-width: 1600px) {
+    .tv-grid {
+        flex: 0 0 auto;
+        width: 16.66666667%; /* This forces 6 cards per row */
+    }
+}
+
+/* Large Monitor Adjustment */
+@media (min-width: 1200px) and (max-width: 1599px) {
+    .tv-grid {
+        flex: 0 0 auto;
+        width: 25%; /* This forces 4 cards per row */
+    }
+}
