@@ -12,6 +12,8 @@
   "type": "commonjs",
   "dependencies": {
     "archiver": "^7.0.1",
+    "compress-pdf": "^0.5.4",
+    "cors": "^2.8.6",
     "express": "^5.1.0",
     "multer": "^2.0.2",
     "office-to-pdf": "^4.0.0"

@@ -4,12 +4,15 @@ const app = express()
 const fs = require('fs');
 const multer = require('multer')
 const upload = multer({ dest: 'Uploads' })
-const port = 3000;
+const port = 3005;
 let toPdf = require('office-to-pdf');
 const archiver = require('archiver');
 const { exec } = require("child_process");
 const util = require('util');
 const execPromise = util.promisify(exec);
+const cors = require("cors");
+app.use(cors());
+
 
 const main_dir = ["Download/Office_PDF/", "Download/compress-pdf/", "Download/temp_pdf/"];
 function cre_dir() {
