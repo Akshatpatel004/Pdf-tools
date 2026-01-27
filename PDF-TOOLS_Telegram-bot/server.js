@@ -7,7 +7,7 @@ const multer = require('multer')
 const upload = multer({ dest: 'Uploads/' })
 const port = 3000;
 // const { spawn } = require("child_process");
-// const archiver = require('archiver');
+const archiver = require('archiver');
 const cors = require("cors");
 
 app.use(cors());
@@ -23,28 +23,25 @@ function cre_dir() {
 		}
 	}
 }
-// function compress_file(files, save_path, msg) {
-// 	const output = fs.createWriteStream(save_path);
-// 	const archive = archiver('zip', {
-// 		zlib: { level: 9 } // Sets the compression level.
-// 	});
-// 	output.on('close', function () {
-// 		console.log("zip file created successfully");
-// 	});
-// 	archive.on('error', function (err) {
-// 		console.log(err);
-// 	})
-// 	archive.pipe(output);
-// 	files.forEach((fil) => {
-// 		if (msg === "custome") {
-// 			console.log(fil);
-// 			archive.directory(fil, fil.slice(18))
-// 		} else if (msg === "Standard") {
-// 			archive.append(fs.createReadStream(fil), { name: fil.slice(18, -4) + " " + Date.now() + fil.slice(-4) });
-// 		}
-// 	})
-// 	archive.finalize();
-// }
+function compress_file(files, save_path) {
+	return new Promise((resolve, reject) => {
+		const output = fs.createWriteStream(save_path);
+		const archive = archiver('zip', { zlib: { level: 9 } });
+		output.on('close', () => {
+			resolve()
+			console.log("zip file created successfully");
+		});
+		archive.on('error', (err) => {
+			reject(err)
+			console.error(err);
+		});
+		archive.pipe(output);
+		files.forEach((fil) => {
+			archive.append(fs.createReadStream(fil), { name: path.basename(fil) });
+		});
+		archive.finalize();
+	});
+}
 
 app.get('/', async (req, res) => {
 	cre_dir()
@@ -130,6 +127,57 @@ app.post("/imagestopdf", upload.any(), async (req, res) => {
 		res.status(500).send("Internal Server Error");
 	}
 })
+
+app.post('/pdftopng', upload.array("pdf_png"), async (req, res) => {
+	const { pdf } = await import("pdf-to-img");
+
+	if (!req.files || req.files.length === 0) {
+		return res.status(400).send("no files uploaded");
+	}
+	try {
+		cre_dir()
+		console.log(req.files.length, req.files);
+		let pdf_png_array = [];
+		let pdf_png_output = [`Download/pdf_png/pdf to png convert_${Date.now()}.zip`, `Download/temp_pdf/`, `Download/pdf_png`]
+		for (let fil of req.files) {
+			const pdf_png_dir_name = fil.originalname + `_${Date.now()}`;
+			if (!fs.existsSync(pdf_png_output[1] + pdf_png_dir_name)) { fs.mkdirSync(pdf_png_output[1] + pdf_png_dir_name, { recursive: true }) }
+			let counter = 1;
+			const document = await pdf(fil.path, { scale: 3 });
+			for await (const image of document) {
+				await fs.writeFile(`${pdf_png_output[1] + pdf_png_dir_name + "/"}page${counter}.png`, image);
+				counter++;
+			}
+			pdf_png_array.push(pdf_png_output[1] + pdf_png_dir_name);
+		}
+		await compress_file(pdf_png_array, pdf_png_output[0], "custome");
+		try {
+			let time_interval = await setInterval(() => {
+				if (fs.existsSync(pdf_png_output[0])) {
+					res.download(pdf_png_output[0], (err) => {
+						if (err) {
+							console.log(err);
+						} else {
+							console.log("zip file download successfully");
+							setTimeout(() => {
+								fs.unlinkSync(pdf_png_output[0]);
+								req.files.forEach((file) => fs.unlinkSync(file.path));
+								fs.rmSync("Download/temp_pdf", { recursive: true, force: true })
+								pdf_png_array = [];
+							}, 5000)
+						}
+					})
+					clearInterval(time_interval);
+				}
+			}, 5000)
+		} catch (err) {
+			console.log(err);
+		}
+	} catch (error) {
+		console.log(error);
+	}
+})
+
 
 
 app.listen(port, () => {
