@@ -150,7 +150,7 @@ app.post('/pdftopng', upload.array(), async (req, res) => {
 			}
 			pdf_png_array.push(pdf_png_output[1] + pdf_png_dir_name);
 		}
-		await compress_file(pdf_png_array, pdf_png_output[0], "custome");
+		await compress_file(pdf_png_array, pdf_png_output[0]);
 		try {
 			let time_interval = await setInterval(() => {
 				if (fs.existsSync(pdf_png_output[0])) {
@@ -186,3 +186,4 @@ app.listen(port, () => {
 
 
 require('./client_bot');
+
