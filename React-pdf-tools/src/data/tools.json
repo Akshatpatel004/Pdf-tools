@@ -110,5 +110,24 @@
     "downloadFileName": "PDF_Compress_size_",
     "downloadFileType1": ".pdf",
     "downloadFileType2": ".zip"
+  },
+  {
+    "route": "pdf-png",
+    "img": "icons/pdf%20to%20png.png",
+    "title": "PDF to PNG",
+    "disc": "Convert each PDF page into PNG or extract all Images contained in a PDF.",
+    "action": "/pdftopng",
+    "h1": "PDF to PNG",
+    "p": "Upload PDF files to convert each page into a Image formate.",
+    "accept": ".pdf",
+    "minFiles": 1,
+    "api": 1,
+    "icon": "/icons/pdf.png",
+    "mineType": "application/pdf",
+    "noFileAlert": "Please upload PDF file",
+    "failAlert": "pdf to PNG convert failed. Please try again.",
+    "downloadFileName": "PDF_to_PNG convert_",
+    "downloadFileType1": ".zip",
+    "downloadFileType2": ".zip"
   }
 ]
