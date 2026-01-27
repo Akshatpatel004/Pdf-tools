@@ -1,31 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import tools from "../data/tools.json";
+import { minetype_routename } from "../data/Minetype";
 import { Upload, Download, X } from 'lucide-react';
 
 
-const ToolUpload = () => {
+const ToolUpload =  () => {
   const { toolName } = useParams();
   const tool = tools.find(t => t.route === toolName);
   if (!tool) return <h2>Tool not found</h2>;
-
+  
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
-
+  let rouye_minetype = minetype_routename(tool.route);
+  
   useEffect(() => {
     window.onbeforeunload = isLoading ? () => true : null;
   }, [isLoading]);
 
-
   // Handle file selection via input or drag-and-drop
   const handleFiles = (files) => {
-    const allowType = tool.accept
-      .split(',')
-      .map(type => type.trim())
-    const pdfs = Array.from(files).filter(file => file.type === tool.mineType || allowType.includes(file.type));
-
+    const pdfs = Array.from(files).filter(file => file.type === tool.mineType || rouye_minetype);
     if (pdfs.length === 0) {
       alert(tool.noFileAlert);
       return;
