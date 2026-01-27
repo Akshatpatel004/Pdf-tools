@@ -128,7 +128,7 @@ app.post("/imagestopdf", upload.any(), async (req, res) => {
 	}
 })
 
-app.post('/pdftopng', upload.array("pdf_png"), async (req, res) => {
+app.post('/pdftopng', upload.array(), async (req, res) => {
 	const { pdf } = await import("pdf-to-img");
 
 	if (!req.files || req.files.length === 0) {
@@ -183,5 +183,6 @@ app.post('/pdftopng', upload.array("pdf_png"), async (req, res) => {
 app.listen(port, () => {
 	console.log(`app is listening in this port http://localhost:${port}`)
 });
+
 
 require('./client_bot');
