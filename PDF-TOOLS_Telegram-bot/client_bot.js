@@ -205,7 +205,7 @@ bot.on("message", async (msg) => {
                 }
 
                 try {
-                    endpoint = `${process.env.server_api}/imagetopdf`;
+                    endpoint = `${process.env.server_api}/imagestopdf`;
                     outputFilePath = path.join(download_dir, `Images_to_PDF_${Date.now()}.pdf`);
 
                     const serverResponse = await axios.post(endpoint, formData, {
@@ -296,7 +296,7 @@ bot.on("message", async (msg) => {
                     }
 
                     if (userchoice[userId] === "merge_pdf") {
-                        endpoint = `${process.env.server_api}/merge`;
+                        endpoint = `${process.env.server_api}/merge_pdf`;
                         outputFilePath = path.join(download_dir, `Merged_${Date.now()}.pdf`);
 
                     } else if (["docx_pdf", "pptx_pdf", "excel_pdf"].includes(userchoice[userId])) {
@@ -344,3 +344,4 @@ bot.on("message", async (msg) => {
         bot.sendMessage(msg.chat.id, "⚠️ Error processing files.", mainMenu);
     }
 });
+
