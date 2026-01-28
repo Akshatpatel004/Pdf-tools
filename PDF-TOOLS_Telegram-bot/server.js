@@ -66,7 +66,7 @@ app.get("/", (req, res) => {
 });
 
 
-app.post("/merge_pdf", upload.any(), async (req, res) => {
+app.post("/merge_pdf", upload.any('files'), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).send("No files uploaded");
   }
@@ -95,7 +95,7 @@ app.post("/merge_pdf", upload.any(), async (req, res) => {
 });
 
 
-app.post("/imagestopdf", upload.any(), async (req, res) => {
+app.post("/imagestopdf", upload.any("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).send("No files uploaded");
   }
@@ -194,3 +194,4 @@ app.listen(port, () => {
 });
 
 require('./client_bot.js');
+
