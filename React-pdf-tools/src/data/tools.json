@@ -130,4 +130,23 @@
     "downloadFileType1": ".zip",
     "downloadFileType2": ".zip"
   }
+  {
+    "route": "Split pdf",
+    "img": "icons/split.png",
+    "title": "Split pdf",
+    "disc": "Easily split PDF files into separate pages or custom page ranges in seconds.",
+    "action": "/pdftopng",
+    "h1": "Split pdf",
+    "p": "Easily split PDF files into separate pages or custom page ranges in seconds.",
+    "accept": ".pdf",
+    "minFiles": 1,
+    "api": 1,
+    "icon": "/icons/pdf.png",
+    "mineType": "application/pdf",
+    "noFileAlert": "Please upload PDF file",
+    "failAlert": "Split pdf failed. Please try again.",
+    "downloadFileName": "Split pdf convert_",
+    "downloadFileType1": ".zip",
+    "downloadFileType2": ".zip"
+  }
 ]
