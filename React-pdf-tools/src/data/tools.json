@@ -146,5 +146,22 @@
     "noFileAlert": "Please upload PDF file",
     "failAlert": "pdf to PNG convert failed. Please try again.",
     "downloadFileName": "split_pdf_"
+  },
+  {
+    "route": "pdf to word",
+    "img": "/icons/pdf-to-word.png",
+    "title": "Pdf to Word",
+    "disc": "Convert PDFs to editable Word docs instantly—preserving fonts, layouts, and security for free.",
+    "action": "/pdf to word",
+    "h1": "Pdf to Word",
+    "p": "Convert PDFs to editable Word docs instantly—preserving fonts, layouts, and security for free.",
+    "accept": ".pdf",
+    "minFiles": 1,
+    "api": 1,
+    "icon": "/icons/pdf.png",
+    "mineType": "application/pdf",
+    "noFileAlert": "Please upload PDF file",
+    "failAlert": "Pdf to Word convert failed. Please try again.",
+    "downloadFileName": "flexxpdf_converted_"
   }
 ]
