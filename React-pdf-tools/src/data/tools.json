@@ -152,7 +152,7 @@
     "img": "/icons/pdf-to-word.png",
     "title": "Pdf to Word",
     "disc": "Convert PDFs to editable Word docs instantly—preserving fonts, layouts, and security for free.",
-    "action": "/pdf to word",
+    "action": "/convert-pdf-to-word",
     "h1": "Pdf to Word",
     "p": "Convert PDFs to editable Word docs instantly—preserving fonts, layouts, and security for free.",
     "accept": ".pdf",
@@ -162,6 +162,9 @@
     "mineType": "application/pdf",
     "noFileAlert": "Please upload PDF file",
     "failAlert": "Pdf to Word convert failed. Please try again.",
-    "downloadFileName": "flexxpdf_converted_"
+    "downloadFileName": "flexxpdf_pdf_docx",
+    "downloadFileType1": ".docx",
+    "downloadFileType2": ".zip"
   }
 ]
+
