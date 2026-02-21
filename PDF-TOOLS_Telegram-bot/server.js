@@ -354,8 +354,20 @@ app.post("/extract-text", upload.single("file"), async (req, res) => {
 });
 
 
+app.post("/extract-text2", upload.any(), async (req, res) => {
+  try {
+    console.log("FILES:", req.files);
+    res.json({ message: "File received", files: req.files });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
 // require('./client_bot.js');
+
