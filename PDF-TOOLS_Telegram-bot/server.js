@@ -16,6 +16,7 @@ const { convert, sizes } = require("image-to-pdf");
 const PDFMerger = require("pdf-merger-js");
 const splitPdfLogic = require('./controler/split_pdf')
 
+const pdfParse = require("pdf-parse");
 const port = 3000;
 
 // Cloudmersive Client Integration
@@ -45,7 +46,7 @@ function cre_dir() {
   }
 }
 
-function createZipFromDirectories(directories , zipPath) {
+function createZipFromDirectories(directories, zipPath) {
   return new Promise((resolve, reject) => {
     const output = fs.createWriteStream(zipPath);
     const archive = archiver("zip", { zlib: { level: 9 } });
@@ -184,26 +185,26 @@ app.post("/pdftopng", upload.array("files"), async (req, res) => {
       pngFolders.push(outDir);
     }
 
-    await createZipFromDirectories(pngFolders , zipPath);
+    await createZipFromDirectories(pngFolders, zipPath);
 
     let time_interval = await setInterval(() => {
-				if (fs.existsSync(zipPath)) {
-					res.download(zipPath, (err) => {
-						if (err) {
-							console.log(err);
-						} else {
-							console.log("zip file download successfully");
-							setTimeout(() => {
-								fs.unlinkSync(zipPath);
-								req.files.forEach((file) => fs.unlinkSync(file.path));
-								fs.rmSync("Download/temp_pdf", { recursive: true, force: true })
-								pdf_png_array = [];
-							}, 5000)
-						}
-					})
-					clearInterval(time_interval);
-				}
-			}, 5000)
+      if (fs.existsSync(zipPath)) {
+        res.download(zipPath, (err) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("zip file download successfully");
+            setTimeout(() => {
+              fs.unlinkSync(zipPath);
+              req.files.forEach((file) => fs.unlinkSync(file.path));
+              fs.rmSync("Download/temp_pdf", { recursive: true, force: true })
+              pdf_png_array = [];
+            }, 5000)
+          }
+        })
+        clearInterval(time_interval);
+      }
+    }, 5000)
 
   } catch (err) {
     console.error(err);
@@ -216,8 +217,8 @@ app.post("/convert-pdf-to-word", upload.any(), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: "No file uploaded" });
   }
-  console.log(req.files.length , req.files );
-  
+  console.log(req.files.length, req.files);
+
 
   try {
     cre_dir();
@@ -231,7 +232,7 @@ app.post("/convert-pdf-to-word", upload.any(), async (req, res) => {
 
       // Perform conversion via Cloud API
       const docxBuffer = await callCloudConverter(fil.path);
-      
+
       // Save buffer to file
       fs.writeFileSync(fullOutputPath, docxBuffer);
       convertedFiles.push(fullOutputPath);
@@ -245,11 +246,11 @@ app.post("/convert-pdf-to-word", upload.any(), async (req, res) => {
           req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
         }, 5000);
       });
-    } 
+    }
     // else {
     //   // Multiple Files -> ZIP Download
     //   const zipPath = path.join("Download/pdf_word", `Word_Batch_${Date.now()}.zip`);
-      
+
     //   // Use the file-specific zipping helper
     //   await createZipFromFiles(convertedFiles, zipPath);
 
@@ -332,6 +333,26 @@ app.post('/split-pdf', upload.any(), async (req, res) => {
     res.status(500).send("Error processing PDF split");
   }
 });
+
+
+app.post("/extract-text", upload.single("file"), async (req, res) => {
+  try {
+    const filePath = req.file.path;
+
+    const dataBuffer = fs.readFileSync(filePath);
+    const data = await pdfParse(dataBuffer);
+
+    fs.unlinkSync(filePath); // delete file after reading
+
+    res.json({
+      pdfText: data.text
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: "Failed to extract text" });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
