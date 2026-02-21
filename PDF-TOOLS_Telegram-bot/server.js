@@ -14,9 +14,8 @@ const cors = require("cors");
 
 const { convert, sizes } = require("image-to-pdf");
 const PDFMerger = require("pdf-merger-js");
-const splitPdfLogic = require('./controler/split_pdf')
+const splitPdfLogic = require('./controler/split_pdf');
 
-const pdfParse = require("pdf-parse");
 const port = 3000;
 
 // Cloudmersive Client Integration
@@ -89,6 +88,8 @@ app.get("/", (req, res) => {
   cre_dir();
   res.send("Server is running");
 });
+
+app.use('/flexxpdf/aiChatbot', require('./routes/flexxpdf_aichatbot.js'))
 
 
 app.post("/merge_pdf", upload.any('files'), async (req, res) => {
@@ -336,26 +337,6 @@ app.post('/split-pdf', upload.any(), async (req, res) => {
 
 
 
-app.post("/extract-text", upload.single("file"), async (req, res) => {
-  try {
-    const filePath = req.file.path;
-
-    const dataBuffer = fs.readFileSync(filePath);
-
-    const pdfData = await pdfParse(dataBuffer);
-
-    fs.unlinkSync(filePath); // delete file after reading
-
-    res.json({
-      message: "Text extracted successfully",
-      text: pdfData.text,
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 
 app.listen(port, () => {
