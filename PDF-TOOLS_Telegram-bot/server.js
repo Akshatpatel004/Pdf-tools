@@ -335,32 +335,25 @@ app.post('/split-pdf', upload.any(), async (req, res) => {
 });
 
 
+
 app.post("/extract-text", upload.single("file"), async (req, res) => {
   try {
     const filePath = req.file.path;
 
     const dataBuffer = fs.readFileSync(filePath);
-    const data = await pdfParse(dataBuffer);
+
+    const pdfData = await pdfParse(dataBuffer);
 
     fs.unlinkSync(filePath); // delete file after reading
 
     res.json({
-      pdfText: data.text
+      message: "Text extracted successfully",
+      text: pdfData.text,
     });
 
   } catch (error) {
-    res.status(500).json({ error: "Failed to extract text" });
-  }
-});
-
-
-app.post("/extract-text2", upload.any(), async (req, res) => {
-  try {
-    console.log("FILES:", req.files);
-    res.json({ message: "File received", files: req.files });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error(error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -370,4 +363,3 @@ app.listen(port, () => {
 });
 
 // require('./client_bot.js');
-
