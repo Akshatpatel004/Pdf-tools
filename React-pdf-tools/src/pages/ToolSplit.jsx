@@ -104,7 +104,7 @@ const ToolSplit = () => {
                 // Set extension based on merging logic
                 const extension = finalMergeValue ? ".pdf" : ".zip";
                 const cleanFileName = selectedFile.name.split('.')[0];
-                a.download = `${tool?.downloadFileName || 'split_'}${cleanFileName}${extension}`;
+                a.download = `${tool?.downloadFileName || 'split_'}${cleanFileName}${Date.now()}${extension}`;
                 
                 document.body.appendChild(a);
                 a.click();
@@ -237,5 +237,6 @@ const ToolSplit = () => {
         </div>
     );
 };
+
 
 export default ToolSplit;
