@@ -11,9 +11,16 @@ const Home = () => {
       <nav className="navbar navbar-light bg-white border-bottom py-3 sticky-top shadow-sm">
         <div className="container-fluid px-md-5">
           <a className="navbar-brand d-flex align-items-center fw-bold text-dark" href="#">
-            <img src="https://play-lh.googleusercontent.com/IkcyuPcrQlDsv62dwGqteL_0K_Rt2BUTXfV3_vR4VmAGo-WSCfT2FgHdCBUsMw3TPGU" alt="Logo" width="35" className="me-2 rounded" />
-            <span>PDF-TOOLS</span>
+            <img src="/icons/logo.JPEG" alt="Logo" width="35" className="me-2 rounded" />
+            <span>FlexXPDF</span>
           </a>
+           <img 
+            src="/icons/sign in.jpeg" 
+            alt="logo" 
+            width="35" 
+            style={{ cursor: "pointer" }} 
+            onClick={() => navigate("/login")} 
+          />
         </div>
       </nav>
 
