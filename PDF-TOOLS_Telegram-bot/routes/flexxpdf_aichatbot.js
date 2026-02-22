@@ -8,7 +8,8 @@ const multer = require("multer");
 
 // Use disk storage (or memoryStorage if you want cleaner)
 const upload = multer({ dest: "Uploads/" });
-
+router.use(express.json()); // for application/json
+router.use(express.urlencoded({ extended: true })); // for form-data
 
 // ===================== EXTRACT TEXT =====================
 router.post("/extract-text", upload.single("file"), async (req, res) => {
@@ -38,7 +39,7 @@ router.post("/extract-text", upload.single("file"), async (req, res) => {
 // ===================== CREATE PDF =====================
 router.post("/create-pdf", async (req, res) => {
     try {
-        const { content } = req.body;
+        const content = req.body?.content || req.body?.text || req.body?.message;
 
         if (!content) {
             return res.status(400).json({ error: "No content provided" });
@@ -56,7 +57,7 @@ router.post("/create-pdf", async (req, res) => {
 
         writeStream.on("finish", () => {
             res.download(filePath, fileName, () => {
-                fs.unlink(req.file.path, (err) => {
+                fs.unlink(filePath, (err) => {
                     if (err) console.error("Upload file delete error:", err);
                     else console.log("Uploaded file deleted");
                 });
