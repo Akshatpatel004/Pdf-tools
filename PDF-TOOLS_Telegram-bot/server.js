@@ -27,6 +27,8 @@ const Apikey = defaultClient.authentications['Apikey'];
 Apikey.apiKey = 'a357e7f0-08de-4c04-8ec6-9af8df7c8e5e';
 
 app.use(cors());
+app.use(express.json()); // for application/json
+app.use(express.urlencoded({ extended: true })); // for form-data
 
 
 const main_dir = [
