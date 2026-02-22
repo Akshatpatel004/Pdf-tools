@@ -27,9 +27,7 @@ export default function AiChatBot() {
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-    }
+    if (file) setSelectedFile(file);
   };
 
   const removeFile = () => {
@@ -44,9 +42,7 @@ export default function AiChatBot() {
     formData.append("userPrompt", input);
     formData.append("action", "chat");
 
-    if (selectedFile) {
-      formData.append("file", selectedFile);
-    }
+    if (selectedFile) formData.append("file", selectedFile);
 
     setMessages((prev) => [...prev, { role: "user", text: input }]);
     setInput("");
@@ -73,7 +69,6 @@ export default function AiChatBot() {
         const data = await res.json();
 
         let aiText = "";
-
         if (Array.isArray(data)) {
           aiText = data[0]?.output || JSON.stringify(data);
         } else {
@@ -103,21 +98,32 @@ export default function AiChatBot() {
 
   return (
     <>
-      {/* Floating Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[9999] rounded-full bg-blue-600 p-4 text-white shadow-2xl transition hover:scale-105 hover:bg-blue-700"
-      >
-        {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
-      </button>
+      {/* Floating Button */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-[9999] rounded-full bg-blue-600 p-4 text-white shadow-2xl transition hover:scale-105 hover:bg-blue-700"
+        >
+          <MessageCircle size={22} />
+        </button>
+      )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 z-[9999] flex h-[75vh] w-[95%] max-w-md flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl backdrop-blur-xl">
+        <div className="fixed bottom-20 right-4 z-[9999] flex h-[75vh] w-[95%] max-w-md flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl">
 
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-center font-semibold text-white">
-            FlexxPDF AI Assistant
+          {/* Header with Close Button */}
+          <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-white">
+            <span className="font-semibold">
+              FlexxPDF AI Assistant
+            </span>
+
+            <button
+              onClick={() => setIsOpen(false)}
+              className="rounded-full p-1 transition hover:bg-white/20"
+            >
+              <X size={18} />
+            </button>
           </div>
 
           {/* Messages */}
@@ -169,11 +175,10 @@ export default function AiChatBot() {
             </div>
           )}
 
-          {/* Input Area */}
+          {/* Input */}
           <div className="border-t bg-white p-3">
             <div className="flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-400">
 
-              {/* Upload Icon */}
               <button
                 type="button"
                 disabled={selectedFile}
