@@ -93,7 +93,7 @@ export default function AiChatBot() {
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "⚠️ Something went wrong." },
+        { role: "bot", text: "⚠️ Something went wrong. Please check you have upload the FILE !" },
       ]);
     }
 
