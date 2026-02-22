@@ -20,7 +20,7 @@
   },
   {
     "route": "image-pdf",
-    "img": "icons/image pdf.png",
+    "img": "/icons/image pdf.png",
     "title": "Image to PDF",
     "disc": "Convert png , jpg images to PDF in seconds. Easily adjust orientation and margins.",
     "action": "/imagestopdf",
@@ -57,7 +57,7 @@
   },
   {
     "route": "ppt-pdf",
-    "img": "icons/ppt%20to%20pdf.png",
+    "img": "/icons/ppt%20to%20pdf.png",
     "title": "PowerPoint to PDF",
     "disc": "make PPT and PPTX slideshows easy to view by converting them to PDF.",
     "action": "/office-to-pdf_converter",
@@ -76,7 +76,7 @@
   },
   {
     "route": "excel-pdf",
-    "img": "icons/excel%20to%20pdf.jpeg",
+    "img": "/icons/excel%20to%20pdf.jpeg",
     "title": "EXCEL to PDF",
     "disc": "Make EXCEL spreadsheet easy to read by converting them to pdf.",
     "action": "/office-to-pdf_converter",
@@ -94,7 +94,7 @@
   },
   {
     "route": "compress-pdf-size",
-    "img": "icons/compress-pdf.png",
+    "img": "/icons/compress-pdf.png",
     "title": "Compress PDF",
     "disc": "Reduce file size while optimizing for maximal PDF quality.",
     "action": "/compress-pdf_size",
@@ -113,7 +113,7 @@
   },
   {
     "route": "pdf-png",
-    "img": "icons/pdf%20to%20png.png",
+    "img": "/icons/pdf%20to%20png.png",
     "title": "PDF to PNG",
     "disc": "Convert each PDF page into PNG or extract all Images contained in a PDF.",
     "action": "/pdftopng",
@@ -167,4 +167,3 @@
     "downloadFileType2": ".zip"
   }
 ]
-
