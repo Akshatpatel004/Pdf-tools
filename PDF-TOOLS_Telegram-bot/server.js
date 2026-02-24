@@ -163,6 +163,7 @@ app.post("/pdftopng", upload.array("files"), async (req, res) => {
 
   try {
     cre_dir();
+    // Ensure you have pdf-to-img installed: npm install pdf-to-img
     const { pdf } = await import("pdf-to-img");
 
     const zipPath = `Download/pdf_png/PDF_to_PNG_${Date.now()}.zip`;
@@ -172,7 +173,7 @@ app.post("/pdftopng", upload.array("files"), async (req, res) => {
     for (const file of req.files) {
       const folderName = `${path.parse(file.originalname).name}_${Date.now()}`;
       const outDir = path.join(tempRoot, folderName);
-      fs.mkdirSync(outDir, { recursive: true });
+      if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
       let page = 1;
       const document = await pdf(file.path, { scale: 3 });
@@ -184,39 +185,32 @@ app.post("/pdftopng", upload.array("files"), async (req, res) => {
         );
         page++;
       }
-
       pngFolders.push(outDir);
     }
 
+    // Wait for zip creation to actually finish
     await createZipFromDirectories(pngFolders, zipPath);
 
-    let time_interval = await setInterval(() => {
-      if (fs.existsSync(zipPath)) {
-        res.download(zipPath, (err) => {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("zip file download successfully");
-            setTimeout(() => {
-              fs.unlinkSync(zipPath);
-              req.files.forEach((file) => fs.unlinkSync(file.path));
-              fs.rmSync("Download/temp_pdf", { recursive: true, force: true })
-              pdf_png_array = [];
-            }, 5000)
-          }
-        })
-        clearInterval(time_interval);
-      }
-    }, 5000)
+    // Send response immediately after creation
+    res.download(zipPath, (err) => {
+      // Cleanup after download
+      setTimeout(() => {
+        if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+        req.files.forEach((file) => fs.existsSync(file.path) && fs.unlinkSync(file.path));
+        pngFolders.forEach(folder => {
+          if (fs.existsSync(folder)) fs.rmSync(folder, { recursive: true, force: true });
+        });
+      }, 5000);
+    });
 
   } catch (err) {
-    console.error(err);
+    console.error("PNG Conversion Error:", err);
     res.status(500).send("PDF to PNG failed");
   }
 });
 
 
-app.post("/convert-pdf-to-word", upload.any(), async (req, res) => {
+app.post("/convert-pdf-to-word", upload.any("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: "No file uploaded" });
   }
@@ -240,7 +234,6 @@ app.post("/convert-pdf-to-word", upload.any(), async (req, res) => {
       fs.writeFileSync(fullOutputPath, docxBuffer);
       convertedFiles.push(fullOutputPath);
     }
-
     if (convertedFiles.length === 1) {
       // Single File Download
       res.download(convertedFiles[0], (err) => {
@@ -250,28 +243,28 @@ app.post("/convert-pdf-to-word", upload.any(), async (req, res) => {
         }, 5000);
       });
     }
-    // else {
-    //   // Multiple Files -> ZIP Download
-    //   const zipPath = path.join("Download/pdf_word", `Word_Batch_${Date.now()}.zip`);
+    else {
+      // Multiple Files -> ZIP Download
+      const zipPath = path.join("Download/pdf_word", `Word_Batch_${Date.now()}.zip`);
 
-    //   // Use the file-specific zipping helper
-    //   await createZipFromFiles(convertedFiles, zipPath);
+      // Use the file-specific zipping helper
+      await createZipFromFiles(convertedFiles, zipPath);
 
-    //   res.download(zipPath, (err) => {
-    //     setTimeout(() => {
-    //       convertedFiles.forEach(p => fs.existsSync(p) && fs.unlinkSync(p));
-    //       if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-    //       req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
-    //     }, 5000);
-    //   });
-    // }
+      res.download(zipPath, (err) => {
+        setTimeout(() => {
+          convertedFiles.forEach(p => fs.existsSync(p) && fs.unlinkSync(p));
+          if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+          req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+        }, 5000);
+      });
+    }
   } catch (error) {
     console.error("Cloud API Error:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
 
-app.post('/split-pdf', upload.any(), async (req, res) => {
+app.post('/split-pdf', upload.any("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).send("No files uploaded");
 
   cre_dir();
@@ -339,9 +332,10 @@ app.post('/split-pdf', upload.any(), async (req, res) => {
 
 
 
+
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
 require('./client_bot.js');
-
