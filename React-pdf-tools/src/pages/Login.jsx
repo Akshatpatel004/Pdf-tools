@@ -58,7 +58,7 @@ const Login = () => {
                 {/* Sign Up Form */}
                 <div className={`absolute top-0 h-full w-full md:w-1/2 flex items-center justify-center p-8 md:p-14 transition-all duration-600 ease-in-out ${isSignup ? "translate-x-0 md:translate-x-full opacity-100 z-50" : "opacity-0 z-10"}`}>
                     <form onSubmit={handleSignup} className="w-full flex flex-col">
-                        <h1 className="text-white text-3xl font-bold mb-5">Join FlexXPDF</h1>
+                        <h1 className="text-white text-3xl font-bold mb-5">Join FlexXpdf</h1>
                         <button type="button" onClick={handleGoogle} className="mb-4 py-3 bg-white/10 border border-white/15 rounded-xl text-white font-semibold hover:bg-white/15 transition-all">Sign up with Google</button>
                         <input className="bg-white/5 border border-white/15 p-3.5 rounded-xl mb-4 text-white outline-none focus:border-sky-500 transition-all" placeholder="Full Name" value={sName} onChange={e => setSName(e.target.value)} required />
                         <input className="bg-white/5 border border-white/15 p-3.5 rounded-xl mb-4 text-white outline-none focus:border-sky-500 transition-all" type="email" placeholder="Email" value={sEmail} onChange={e => setSEmail(e.target.value)} required />
@@ -88,7 +88,7 @@ const Login = () => {
                             <button className="px-10 py-2 border border-white rounded-xl font-semibold" onClick={() => setIsSignup(false)}>Sign In</button>
                         </div>
                         <div className={`absolute top-0 right-0 flex flex-col items-center justify-center w-1/2 h-full px-10 text-center text-white transition-all duration-600 ${isSignup ? "translate-x-[200%]" : "translate-x-0"}`}>
-                            <h1 className="text-3xl font-bold mb-4">New to FlexXPDF?</h1>
+                            <h1 className="text-3xl font-bold mb-4">New to FlexXpdf?</h1>
                             <button className="px-10 py-2 border border-white rounded-xl font-semibold" onClick={() => setIsSignup(true)}>Sign Up</button>
                         </div>
                     </div>
