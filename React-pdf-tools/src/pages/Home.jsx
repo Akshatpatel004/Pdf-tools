@@ -120,7 +120,7 @@ const Home = () => {
                     <h1 className="text-slate-900 dark:text-slate-100 text-3xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight">
                       The Ultimate <span className="text-red-500 text-nowrap">PDF</span> Solution
                     </h1>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm md:text-lg max-w-md mx-auto lg:mx-0">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm md:text-lg max-w-md mx-auto lg:mx-0 mt-3">
                       Every tool you need to use PDFs. All 100% FREE. Merge, Convert, and Edit with just a few clicks.
                     </p>
                   </div>
@@ -202,5 +202,6 @@ const Home = () => {
     </div>
   );
 };
+
 
 export default Home;
