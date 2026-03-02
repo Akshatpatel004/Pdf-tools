@@ -1,3 +1,27 @@
+@theme {
+  /* Custom Colors */
+  --color-primary: #e53734;
+  --background-light: #f8f6f6;
+  --background-dark: #211111;
+
+  /* Custom Fonts */
+  --font-display: "Inter", "sans-serif";
+
+  /* Custom Border Radius */
+  --radius-xl: 0.75rem;
+}
+
+/* Base Body Styles */
+@layer base {
+  body {
+    min-height: max(884px, 100dvh);
+    font-family: var(--font-display);
+  }
+}
+
+
+
+
 /* #root {
   max-width: 1280px;
   margin: 0 auto;
