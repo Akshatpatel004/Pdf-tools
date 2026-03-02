@@ -149,7 +149,7 @@
   },
   {
     "route": "pdf to word",
-    "img": "/icons/pdf-to-word.png",
+    "img": "https://play-lh.googleusercontent.com/CXxNK9aRLBJu_UVZXzXYqWsYIi_k6HwN8pWVhHhHDD1-YdRDGhkyqCbi2QKjO5Y8ZyY",
     "title": "Pdf to Word",
     "disc": "Convert PDFs to editable Word docs instantly—preserving fonts, layouts, and security for free.",
     "action": "/convert-pdf-to-word",
