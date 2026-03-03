@@ -43,7 +43,8 @@ export default function AiChatBot() {
 
   const sendMessage = async (customText = null) => {
     const textToSend = customText || input;
-    if (!textToSend && !selectedFile) return;
+    // Block sending if both text and file are empty
+    if (!textToSend.trim() && !selectedFile) return;
 
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const currentFile = selectedFile;
@@ -80,10 +81,13 @@ export default function AiChatBot() {
         setMessages((prev) => [...prev, { role: "bot", text: aiText, time: botTime }]);
       }
     } catch (err) {
-      setMessages((prev) => [...prev, { role: "bot", text: "⚠️ Something went wrong. Please check you have upload the FILE !", time: "" }]);
+      setMessages((prev) => [...prev, { role: "bot", text: "⚠️ Error processing request.", time: "" }]);
     }
     setLoading(false);
   };
+
+  // Logic for Send Button state
+  const isSendDisabled = loading || (!input.trim() && !selectedFile);
 
   return (
     <>
@@ -107,7 +111,6 @@ export default function AiChatBot() {
         }
       `}</style>
 
-      {/* Floating Toggle Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -117,7 +120,6 @@ export default function AiChatBot() {
         </button>
       )}
 
-      {/* Chat Window */}
       {isOpen && (
         <div className="fixed bottom-6 right-6 z-[9999] flex h-[80vh] w-[90%] max-w-[380px] flex-col overflow-hidden rounded-[1.5rem] bg-white shadow-2xl border border-gray-100">
 
@@ -144,7 +146,6 @@ export default function AiChatBot() {
           <div className="flex-1 space-y-4 overflow-y-auto bg-[#F8F9FA] p-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                {/* Bot max-width increased by 2px (86%) */}
                 <div className={`flex items-start gap-2 ${msg.role === "bot" ? "max-w-[86%]" : "max-w-[85%]"}`}>
                   {msg.role === "bot" && (
                     <div className="mt-1 shrink-0 flex items-center justify-center rounded-full bg-white p-1 shadow-sm">
@@ -191,8 +192,9 @@ export default function AiChatBot() {
 
           {/* Footer Area */}
           <div className="bg-white px-4 pb-4 pt-2 border-t">
-            {!loading && (
-              <div className="mb-3 flex gap-2 overflow-x-auto no-scrollbar py-1">
+            {/* Show Suggestion chips ONLY if input is empty and not loading */}
+            {!loading && !input.trim() && !selectedFile && (
+              <div className="mb-3 flex gap-2 overflow-x-auto no-scrollbar py-1 transition-all duration-300">
                 {["Summarize", "Translate in Hindi", "Generate 20 MCQ", "Generate 10 short question"].map((chip) => (
                   <button
                     key={chip}
@@ -205,7 +207,7 @@ export default function AiChatBot() {
               </div>
             )}
 
-            {/* File Selection Display (ABOVE the textbox) */}
+            {/* File Selection Display */}
             {selectedFile && (
               <div className="mb-2 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg p-2 animate-in fade-in slide-in-from-bottom-1">
                 <div className="flex items-center gap-2 truncate">
@@ -236,16 +238,20 @@ export default function AiChatBot() {
                 placeholder="Type a message..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                onKeyDown={(e) => e.key === "Enter" && !isSendDisabled && sendMessage()}
                 className="flex-1 bg-transparent py-1.5 text-xs outline-none text-slate-700"
               />
 
               <button
                 onClick={() => sendMessage()}
-                disabled={loading}
-                className="flex items-center justify-center text-red-500 hover:bg-red-50 p-1.5 rounded-full disabled:opacity-30"
+                disabled={isSendDisabled}
+                className={`flex items-center justify-center p-1.5 rounded-full transition-all ${
+                  isSendDisabled 
+                  ? "text-gray-300 cursor-not-allowed" 
+                  : "text-red-500 hover:bg-red-50"
+                }`}
               >
-                <Send size={18} fill="currentColor" />
+                <Send size={18} fill={isSendDisabled ? "none" : "currentColor"} />
               </button>
             </div>
           </div>
