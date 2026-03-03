@@ -31,7 +31,6 @@ const AppContent = () => {
         <Route path="/tool/:toolName" element={<ToolUpload />} />
         <Route path="/login" element={<Login />} />
       </Routes>
-
       {!isLoginPage && <AiChatBot />}
     </>
   );

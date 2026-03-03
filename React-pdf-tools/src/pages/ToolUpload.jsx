@@ -22,14 +22,14 @@ const ToolUpload = () => {
     </div>
   );
 
-  let rouye_minetype = minetype_routename(tool.route);
+  let route_minetype = minetype_routename(tool.route);
 
   useEffect(() => {
     window.onbeforeunload = isLoading ? () => true : null;
   }, [isLoading]);
 
   const handleFiles = (files) => {
-    const validFiles = Array.from(files).filter(file => file.type === tool.mineType || rouye_minetype);
+    const validFiles = Array.from(files).filter(file => file.type === tool.mineType || route_minetype);
     if (validFiles.length === 0) {
       alert(tool.noFileAlert);
       return;

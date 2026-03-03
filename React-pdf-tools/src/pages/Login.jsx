@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     GoogleAuthProvider,
-    OAuthProvider,
     signInWithPopup,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -14,10 +13,10 @@ import { auth } from "../firebase-config.js";
 const Login = () => {
     const navigate = useNavigate();
     const googleProvider = new GoogleAuthProvider();
-    const appleProvider = new OAuthProvider('apple.com');
 
     const [isSignup, setIsSignup] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false); // New state for checkbox
 
     // Form States
     const [sName, setSName] = useState("");
@@ -33,8 +32,13 @@ const Login = () => {
         return () => unsubscribe();
     }, [navigate]);
 
-    // Social Login Handlers
+    // Social Login Handler
     const handleGoogle = async () => {
+        // Validation: Ensure checkbox is checked before social login
+        if (!rememberMe) {
+            alert("Please agree to the terms / check 'Remember for 30 days' to proceed.");
+            return;
+        }
         try { 
             await signInWithPopup(auth, googleProvider); 
         } catch (err) { 
@@ -42,22 +46,14 @@ const Login = () => {
         }
     };
 
-    const handleApple = async () => {
-        try {
-            // Apple requires email/name scopes to be requested explicitly
-            appleProvider.addScope('email');
-            appleProvider.addScope('name');
-            await signInWithPopup(auth, appleProvider);
-        } catch (err) {
-            if (err.code !== 'auth/popup-closed-by-user') {
-                alert(err.message);
-            }
-        }
-    };
-
     // Email/Password Handlers
     const handleSignup = async (e) => {
         e.preventDefault();
+        // Validation: Block Signup if checkbox is empty
+        if (!rememberMe) {
+            alert("Please check the 'Remember me' box to create an account.");
+            return;
+        }
         try {
             const result = await createUserWithEmailAndPassword(auth, sEmail, sPassword);
             await updateProfile(result.user, { displayName: sName });
@@ -66,7 +62,16 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        try { await signInWithEmailAndPassword(auth, lEmail, lPassword); } catch (err) { alert(err.message); }
+        // Validation: Block Login if checkbox is empty
+        if (!rememberMe) {
+            alert("Please check the 'Remember me' box to sign in.");
+            return;
+        }
+        try { 
+            await signInWithEmailAndPassword(auth, lEmail, lPassword); 
+        } catch (err) { 
+            alert(err.message); 
+        }
     };
 
     return (
@@ -75,7 +80,7 @@ const Login = () => {
                 <div className="flex w-full max-w-6xl overflow-hidden rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800">
 
                     {/* Left Side: Brand Section */}
-                    <div className="hidden w-1/2 flex-col justify-center bg-red-600 p-12 text-white lg:flex">
+                    <div className="hidden w-1/2 flex-col justify-center bg-red-500 p-12 text-white lg:flex">
                         <h1 className="mb-6 text-5xl font-extrabold leading-tight">
                             {isSignup ? "Manage your PDFs with ease." : "Master your PDF workflow with ease."}
                         </h1>
@@ -111,10 +116,9 @@ const Login = () => {
                     {/* Right Side: Auth Form */}
                     <div className="flex w-full flex-col justify-center px-6 py-10 md:px-12 lg:w-1/2 lg:p-16 relative">
                         
-                        {/* Skip Login Button */}
                         <button 
                             onClick={() => navigate("/")}
-                            className="absolute top-6 right-8 text-sm font-bold text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                            className="absolute top-6 right-8 text-sm font-bold text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                         >
                             Skip Login
                         </button>
@@ -129,8 +133,7 @@ const Login = () => {
                                 </p>
                             </header>
 
-                            {/* Social Buttons */}
-                            <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="mb-8 grid grid-cols-1 gap-4">
                                 <button
                                     onClick={handleGoogle}
                                     className="group flex items-center justify-center gap-3 rounded-xl border border-slate-200 hover:border-slate-700 py-3.5 font-bold text-slate-900 hover:text-white transition-all hover:bg-slate-50 hover:bg-slate-800 active:scale-95 cursor-pointer"
@@ -141,17 +144,7 @@ const Login = () => {
                                         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05" />
                                         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                                     </svg>
-                                    <span>Google</span>
-                                </button>
-
-                                <button 
-                                    onClick={handleApple}
-                                    className="group flex items-center justify-center gap-3 rounded-xl border border-slate-200 hover:border-slate-700 py-3.5 font-bold text-slate-900 hover:text-white transition-all hover:bg-slate-50 hover:bg-slate-800 active:scale-95 cursor-pointer fill-slate-900 hover:fill-white"
-                                >
-                                    <svg className="w-5 h-5" viewBox="0 0 384 512">
-                                        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
-                                    </svg>
-                                    <span>Apple</span>
+                                    <span>Continue with Google</span>
                                 </button>
                             </div>
 
@@ -185,7 +178,7 @@ const Login = () => {
                                 <div>
                                     <div className="flex justify-between">
                                         <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
-                                        {!isSignup && <a href="#" className="text-sm font-semibold text-red-600 hover:underline">Forgot?</a>}
+                                        {!isSignup && <a href="#" className="text-sm font-semibold text-red-500 hover:underline">Forgot?</a>}
                                     </div>
                                     <div className="relative">
                                         <input
@@ -208,14 +201,21 @@ const Login = () => {
                                     </div>
                                 </div>
 
-                                {!isSignup && (
-                                    <div className="flex items-center gap-2 py-1">
-                                        <input type="checkbox" className="h-4 w-4 rounded border-slate-300 accent-red-600 cursor-pointer" id="remember" />
-                                        <label htmlFor="remember" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer">Remember for 30 days</label>
-                                    </div>
-                                )}
+                                {/* Updated Checkbox with State */}
+                                <div className="flex items-center gap-2 py-1">
+                                    <input 
+                                        type="checkbox" 
+                                        className="h-4 w-4 rounded border-slate-300 accent-red-500 cursor-pointer" 
+                                        id="remember" 
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                    />
+                                    <label htmlFor="remember" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+                                        Remember for 30 days
+                                    </label>
+                                </div>
 
-                                <button className="w-full rounded-xl bg-red-600 py-4 font-bold text-white shadow-lg shadow-red-500/30 hover:bg-red-700 active:scale-[0.98] cursor-pointer">
+                                <button type="submit" className="w-full rounded-xl bg-red-500 py-4 font-bold text-white shadow-lg shadow-red-500/30 hover:bg-red-600 active:scale-[0.98] cursor-pointer transition-all">
                                     {isSignup ? "Get Started →" : "Sign In →"}
                                 </button>
                             </form>
@@ -223,8 +223,11 @@ const Login = () => {
                             <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 pt-3">
                                 {isSignup ? "Already have an account?" : "Don't have an account?"}
                                 <button
-                                    onClick={() => setIsSignup(!isSignup)}
-                                    className="ml-2 font-bold text-red-600 hover:underline cursor-pointer"
+                                    onClick={() => {
+                                        setIsSignup(!isSignup);
+                                        setRememberMe(false); // Reset checkbox when switching modes
+                                    }}
+                                    className="ml-2 font-bold text-red-500 hover:underline cursor-pointer"
                                 >
                                     {isSignup ? "Log In" : "Sign Up for Free"}
                                 </button>
