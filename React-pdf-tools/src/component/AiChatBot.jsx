@@ -81,7 +81,7 @@ export default function AiChatBot() {
         setMessages((prev) => [...prev, { role: "bot", text: aiText, time: botTime }]);
       }
     } catch (err) {
-      setMessages((prev) => [...prev, { role: "bot", text: "⚠️ Error processing request.", time: "" }]);
+      setMessages((prev) => [...prev, { role: "bot", text: "⚠️ Something went wrong. Please check you have upload the FILE !", time: "" }]);
     }
     setLoading(false);
   };
