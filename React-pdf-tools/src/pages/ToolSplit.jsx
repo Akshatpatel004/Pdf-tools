@@ -1,241 +1,274 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import tools from "../data/tools.json";
 import { minetype_routename } from "../data/Minetype";
-import { Upload, Scissors, X, Plus } from 'lucide-react';
+import Footer from "../component/Footer.jsx";
+import { Loader2, Trash2, CheckCircle2, Plus, X, ShieldCheck, Zap, Globe, GripVertical } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 
 const ToolSplit = () => {
-    const { toolName } = useParams();
-    const tool = tools.find(t => t.route === "split-pdf") || tools.find(t => t.route === toolName);
+  const { toolName } = useParams();
+  const navigate = useNavigate();
+  // Target split-pdf specifically but fallback to toolName
+  const tool = tools.find(t => t.route === "split-pdf") || tools.find(t => t.route === toolName);
+  
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [totalPageCount, setTotalPageCount] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  
+  // Split specific states
+  const [ranges, setRanges] = useState([{ from: 1, to: 1 }]);
+  const [mergePdf, setMergePdf] = useState(false);
+  
+  const fileInputRef = useRef(null);
+
+  if (!tool) return <div className="h-screen flex items-center justify-center bg-slate-50">Tool not found</div>;
+
+  useEffect(() => {
+    window.onbeforeunload = isLoading ? () => true : null;
+  }, [isLoading]);
+
+  // Reset range and merge option when file changes
+  useEffect(() => {
+    if (selectedFile) {
+      setRanges([{ from: 1, to: totalPageCount }]);
+      setMergePdf(false);
+    }
+  }, [selectedFile, totalPageCount]);
+
+  const getPageCount = async (file) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+      return pdfDoc.getPageCount();
+    } catch (error) {
+      console.error("Error reading PDF:", error);
+      return 1;
+    }
+  };
+
+  const handleFiles = async (files) => {
+    const file = files[0];
+    if (!file) return;
     
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [totalPageCount, setTotalPageCount] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
+    setIsLoading(true);
+    setIsSuccess(false);
     
-    const [ranges, setRanges] = useState([{ from: 1, to: 1 }]);
-    const [mergePdf, setMergePdf] = useState(false);
+    const pages = await getPageCount(file);
+    setTotalPageCount(pages);
+    setSelectedFile(file);
+    setIsLoading(false);
+  };
+
+  const updateRange = (index, field, value) => {
+    const newRanges = [...ranges];
+    let numValue = value === "" ? "" : parseInt(value);
     
-    const fileInputRef = useRef(null);
-    let rouye_minetype = minetype_routename(tool?.route);
+    // Boundary checks
+    if (numValue !== "" && numValue > totalPageCount) numValue = totalPageCount;
+    if (numValue !== "" && numValue < 1) numValue = 1;
+    
+    newRanges[index][field] = numValue;
+    setRanges(newRanges);
+  };
 
-    // Auto-reset merge checkbox if ranges are reduced to 1
-    useEffect(() => {
-        if (ranges.length <= 1) {
-            setMergePdf(false);
-        }
-    }, [ranges.length]);
+  const removeRange = (index) => {
+    if (ranges.length > 1) {
+      setRanges(ranges.filter((_, i) => i !== index));
+    }
+  };
 
-    const getPageCount = async (file) => {
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-            return pdfDoc.getPageCount();
-        } catch (error) {
-            console.error("Error reading PDF:", error);
-            return 1;
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedFile || isLoading) return;
 
-    useEffect(() => {
-        if (selectedFile) {
-            setRanges([{ from: 1, to: totalPageCount || 1 }]);
-            setMergePdf(false);
-        }
-    }, [selectedFile, totalPageCount]);
+    setIsLoading(true);
+    const splitRange = ranges.map(r => `${r.from}-${r.to}`).join(',');
+    const finalMergeValue = ranges.length === 1 ? true : mergePdf;
+    
+    const formData = new FormData();
+    formData.append('files', selectedFile);
+    formData.append('splitRange', splitRange);
+    formData.append('mergePdf', finalMergeValue); 
+    formData.append('splitMode', 'fixed'); 
 
-    const handleFiles = async (files) => {
-        const file = files[0];
-        if (!file || (file.type !== tool?.mineType && !rouye_minetype)) {
-            alert(tool?.noFileAlert || "Please upload PDF file");
-            return;
-        }
+    try {
+      let API_BASE = tool.api === 1 ? import.meta.env.VITE_SERVER_API : import.meta.env.VITE_SERVER_API2;
+      const response = await fetch(`${API_BASE}${tool.action}`, {
+        method: "POST",
+        body: formData
+      });
 
-        setIsLoading(true);
-        const pages = await getPageCount(file);
-        setTotalPageCount(pages);
-        setSelectedFile(file);
-        setIsLoading(false);
-    };
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        // If merging multiple ranges or single range, download as PDF, else ZIP
+        const extension = finalMergeValue ? ".pdf" : ".zip";
+        a.download = `${tool.downloadFileName || 'split_'}${Date.now()}${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        setIsSuccess(true);
+      } else {
+        alert("Split failed. Please check your ranges.");
+      }
+    } catch (error) {
+      alert("Error connecting to server.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const updateRange = (index, field, value) => {
-        const newRanges = [...ranges];
-        let numValue = value === "" ? "" : parseInt(value);
-        if (numValue !== "" && numValue > totalPageCount) numValue = totalPageCount;
-        if (numValue !== "" && numValue < 1) numValue = 1;
-        newRanges[index][field] = numValue;
-        setRanges(newRanges);
-    };
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      <nav className="bg-white border-b border-slate-200 py-3 px-6">
+        <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs text-slate-400">
+          <span className="cursor-pointer hover:text-red-500" onClick={() => navigate('/')}>Home</span>
+          <span>&rsaquo;</span>
+          <span className="font-medium text-slate-900 capitalize">Split PDF</span>
+        </div>
+      </nav>
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!selectedFile || isLoading) return;
+      <main className="max-w-4xl mx-auto px-4 py-12">
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-black text-[#1E293B] mb-2">{tool.h1}</h1>
+          <p className="text-slate-500">{tool.p}</p>
+        </div>
 
-        setIsLoading(true);
-
-        // Prepare range string: "1-10, 15-20"
-        const splitRange = ranges.map(r => `${r.from}-${r.to}`).join(',');
-
-        // LOGIC: If only 1 range, force mergePdf to true so backend returns PDF
-        // Otherwise, use the checkbox state
-        const finalMergeValue = ranges.length === 1 ? true : mergePdf;
-
-        const formData = new FormData();
-        formData.append('files', selectedFile);
-        formData.append('splitRange', splitRange);
-        formData.append('mergePdf', finalMergeValue); 
-        formData.append('splitMode', 'fixed'); 
-
-        try {
-            let API_BASE = tool?.api === 1 ? import.meta.env.VITE_SERVER_API : import.meta.env.VITE_SERVER_API2;
-            
-            const response = await fetch(`${API_BASE}${tool?.action}`, {
-                method: "POST",
-                body: formData
-            });
-
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                
-                // Set extension based on merging logic
-                const extension = finalMergeValue ? ".pdf" : ".zip";
-                const cleanFileName = selectedFile.name.split('.')[0];
-                a.download = `${tool?.downloadFileName || 'split_'}${cleanFileName}${extension}`;
-                
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-            } else {
-                const errorText = await response.text();
-                alert(`Error: ${errorText || tool?.failAlert}`);
-            }
-        } catch (error) {
-            console.error("API Error:", error);
-            alert("An error occurred connecting to the server.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-[#7494EC] flex items-center justify-center p-4 font-sans text-slate-700">
-            <div className="bg-white w-full max-w-[500px] rounded-2xl shadow-2xl p-8 flex flex-col transition-all duration-300">
-                
-                <div className="text-center mb-6">
-                    <h1 className="text-2xl font-bold text-slate-500 tracking-wider uppercase">{tool?.h1 || "Split PDF"}</h1>
-                    <p className="text-sm text-slate-400">{tool?.p || "Extract pages from your PDF"}</p>
-                </div>
-
-                {!selectedFile ? (
-                    <div
-                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                        onDragLeave={() => setIsDragging(false)}
-                        onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
-                        className={`relative border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-colors 
-                        ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-[#A8B3E3] bg-gradient-to-b from-white to-[#F1F6FF]'}`}
-                    >
-                        <img src="/icons/cloud.png" alt="cloud" />
-                        <span className="text-slate-500 text-sm mb-2 pt-3">Drag & Drop PDF here</span>
-                        <span className="text-slate-500 text-sm mb-2 pt-1 font-bold">OR</span>
-                        <button
-                            onClick={() => fileInputRef.current.click()}
-                            className="bg-[#025bee] text-white px-6 py-2 rounded-md font-medium flex items-center gap-2 hover:bg-blue-700 transition-colors"
-                        >
-                            <Upload size={18} /> Choose File To Upload
-                        </button>
-                        <input type="file" ref={fileInputRef} onChange={(e) => handleFiles(e.target.files)} className="hidden" accept={tool?.accept || ".pdf"} />
+        {/* Interaction Area */}
+        <section
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
+          className={`relative rounded-3xl border-2 border-dashed p-10 flex flex-col items-center justify-center mb-10 transition-all ${isDragging ? 'border-red-500 bg-red-50' : 'border-red-100 bg-red-50/30'}`}
+        >
+          {isSuccess ? (
+            <div className="flex flex-col items-center text-center animate-in zoom-in-95">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 size={32} className="text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800">Done!</h3>
+              <p className="text-sm text-slate-500 mt-1 mb-6">PDF split successfully.</p>
+              <button onClick={() => { setSelectedFile(null); setIsSuccess(false); }} className="px-6 py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 cursor-pointer">
+                Split New PDF
+              </button>
+            </div>
+          ) : !selectedFile ? (
+            <>
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mb-4">
+                <img src={tool.img} alt="" className="w-10 h-10" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">Drag and drop PDF here</h3>
+              <p className="text-xs text-slate-400 mt-1 mb-6 text-center">Select the PDF you want to split</p>
+              <button onClick={() => fileInputRef.current.click()} className="px-6 py-2.5 bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 cursor-pointer">
+                Select PDF File
+              </button>
+              <input type="file" ref={fileInputRef} onChange={(e) => handleFiles(e.target.files)} className="hidden" accept=".pdf" />
+            </>
+          ) : (
+            <div className="w-full max-w-md">
+               <div className="flex items-center gap-4 p-2 bg-white border border-slate-200 rounded-xl shadow-sm">
+                  <div className="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center shrink-0">
+                    <img src={tool.icon || tool.img} alt="" className="w-7 h-8" />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <p className="font-bold text-slate-800 truncate text-[13px] leading-none mb-1">{selectedFile.name}</p>
+                    <div className="flex items-center gap-1 text-[10px] text-slate-500 leading-none mt-[2px] font-medium">
+                      <span>{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</span>
+                      <span className="text-[8px] opacity-40">•</span>
+                      <span>{totalPageCount} Pages</span>
                     </div>
-                ) : (
-                    <>
-                        <div className="bg-[#eff5ff] text-[#025bee] flex items-center justify-between p-4 rounded-lg border border-blue-100">
-                            <div className="flex items-center gap-3 truncate">
-                                <img src={tool?.icon || "/icons/pdf.png"} alt="pdf" className="w-8 h-8 object-contain" />
-                                <div className='flex flex-col truncate'>
-                                    <span className="text-sm font-bold truncate">{selectedFile.name}</span>
-                                    <span className="text-[10px] opacity-70 font-bold uppercase">{totalPageCount} Pages Found</span>
-                                </div>
-                            </div>
-                            <button onClick={() => setSelectedFile(null)} className="text-red-400 hover:text-red-600">
-                                <X size={20} />
-                            </button>
-                        </div>
+                  </div>
+                  <button onClick={() => setSelectedFile(null)} className="p-2 text-slate-400 hover:text-red-500"><Trash2 size={18} /></button>
+               </div>
+            </div>
+          )}
+        </section>
 
-                        <div className="mt-6">
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">Select Ranges</h3>
-                                    <button onClick={() => setRanges([...ranges, { from: 1, to: totalPageCount }])} className="text-[#025bee] flex items-center gap-1 text-xs font-bold hover:underline">
-                                        <Plus size={14} /> Add Range
-                                    </button>
-                                </div>
-                                <div className="max-h-[220px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                                    {ranges.map((range, index) => (
-                                        <div key={index} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                            <div className="flex-1 grid grid-cols-2 gap-2">
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 font-bold uppercase">From</span>
-                                                    <input 
-                                                        type="number" 
-                                                        value={range.from} 
-                                                        onChange={(e) => updateRange(index, 'from', e.target.value)} 
-                                                        className="w-full bg-white pl-12 pr-2 py-2 border rounded-lg text-sm outline-none focus:border-blue-400" 
-                                                    />
-                                                </div>
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 font-bold uppercase">To</span>
-                                                    <input 
-                                                        type="number" 
-                                                        value={range.to} 
-                                                        onChange={(e) => updateRange(index, 'to', e.target.value)} 
-                                                        className="w-full bg-white pl-8 pr-2 py-2 border rounded-lg text-sm outline-none focus:border-blue-400" 
-                                                    />
-                                                </div>
-                                            </div>
-                                            {ranges.length > 1 && (
-                                                <button onClick={() => setRanges(ranges.filter((_, i) => i !== index))} className="text-slate-300 hover:text-red-500 transition-colors">
-                                                    <X size={18} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                                
-                                {/* Hide checkbox if only 1 range exists */}
-                                {ranges.length > 1 && (
-                                    <div className="mt-4 flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-100 animate-in fade-in slide-in-from-top-2">
-                                        <input 
-                                            type="checkbox" 
-                                            id="mergePdf" 
-                                            checked={mergePdf} 
-                                            onChange={(e) => setMergePdf(e.target.checked)} 
-                                            className="w-4 h-4 accent-[#025bee] cursor-pointer" 
-                                        />
-                                        <label htmlFor="mergePdf" className="text-xs font-bold text-slate-600 cursor-pointer italic">Merge all ranges in one PDF</label>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </>
-                )}
+        {/* Range Settings */}
+        {selectedFile && !isSuccess && (
+          <div className="animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center mb-4 px-1">
+              <h3 className="font-bold flex items-center gap-2 text-sm text-slate-500">
+                <GripVertical size={16} /> SPLIT RANGES
+              </h3>
+              <button onClick={() => setRanges([...ranges, { from: 1, to: totalPageCount }])} className="text-red-500 text-xs font-bold hover:underline flex items-center gap-1">
+                <Plus size={14} /> Add Range
+              </button>
+            </div>
 
-                <div className="mt-8">
-                    <button
-                        disabled={isLoading || !selectedFile}
-                        onClick={handleSubmit}
-                        className={`w-full py-4 rounded-lg flex items-center justify-center gap-2 text-white font-bold text-lg transition-all 
-                        ${selectedFile && !isLoading ? 'bg-green-600 hover:bg-green-700 shadow-md' : 'bg-gray-300 cursor-not-allowed'}`}
-                    >
-                        {isLoading ? "Processing..." : "Split PDF"}
+            <div className="space-y-3 mb-10 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+              {ranges.map((range, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                  <div className="flex-1 grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 uppercase">From</span>
+                      <input type="number" value={range.from} onChange={(e) => updateRange(index, 'from', e.target.value)} className="w-full bg-slate-50 pl-12 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm font-bold focus:border-red-500 outline-none" />
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 uppercase">To</span>
+                      <input type="number" value={range.to} onChange={(e) => updateRange(index, 'to', e.target.value)} className="w-full bg-slate-50 pl-8 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm font-bold focus:border-red-500 outline-none" />
+                    </div>
+                  </div>
+                  {ranges.length > 1 && (
+                    <button onClick={() => removeRange(index)} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                      <X size={20} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Action Bar */}
+            <div className="bg-[#1E293B] rounded-3xl p-6 shadow-xl border border-slate-700/50">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="text-white">
+                        <h4 className="font-bold text-lg">Ready to split?</h4>
+                        {ranges.length > 1 && (
+                            <div className="mt-3 flex items-center gap-2 bg-slate-800/50 p-2.5 rounded-xl border border-white/5">
+                                <input type="checkbox" id="mergePdf" checked={mergePdf} onChange={(e) => setMergePdf(e.target.checked)} className="w-4 h-4 accent-red-500 cursor-pointer" />
+                                <label htmlFor="mergePdf" className="text-[11px] font-bold text-slate-300 cursor-pointer">Merge all ranges into one PDF</label>
+                            </div>
+                        )}
+                    </div>
+                    <button onClick={handleSubmit} disabled={isLoading} className={`w-full md:w-auto px-12 py-4 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 ${isLoading ? 'bg-slate-700' : 'bg-red-500 shadow-lg shadow-red-500/20 hover:bg-red-600 active:scale-95 cursor-pointer'}`}>
+                        {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Download NOW"}
                     </button>
                 </div>
             </div>
+          </div>
+        )}
+      </main>
+
+      {/* FEATURE FOOTER */}
+      <section className="bg-white border-t border-slate-100 py-12">
+        <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><ShieldCheck size={24} /></div>
+            <h4 className="font-bold text-slate-800 mb-1">Secure Processing</h4>
+            <p className="text-xs text-slate-400">Your files are encrypted and automatically deleted after processing.</p>
+          </div>
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><Zap size={24} /></div>
+            <h4 className="font-bold text-slate-800 mb-1">Original Quality</h4>
+            <p className="text-xs text-slate-400">Get high-quality results without compromising the integrity of your data.</p>
+          </div>
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><Globe size={24} /></div>
+            <h4 className="font-bold text-slate-800 mb-1">Works Everywhere</h4>
+            <p className="text-xs text-slate-400">Access our tools from any browser or device, anywhere in the world.</p>
+          </div>
         </div>
-    );
+      </section>
+
+      <Footer />
+    </div>
+  );
 };
 
 export default ToolSplit;
