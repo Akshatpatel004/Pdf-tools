@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import tools from "../data/tools.json";
-import { minetype_routename } from "../data/Minetype"; // Importing your helper
+import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
-import { Loader2, Trash2, GripVertical, CheckCircle2 , ShieldCheck, Zap, Globe } from 'lucide-react';
+import { Loader2, Trash2, GripVertical, CheckCircle2, ShieldCheck, Zap, Globe } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 
 const ToolUpload = () => {
@@ -38,12 +38,9 @@ const ToolUpload = () => {
   const handleFiles = async (files) => {
     const fileList = Array.from(files);
     setIsSuccess(false);
-
-    // Get the allowed minetype from your helper file
     const allowedType = minetype_routename(tool.route);
 
     const processedFiles = await Promise.all(fileList.map(async (file) => {
-      // Logic for validation: Check tool.mineType, your helper, or if it's a PDF
       const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith('.pdf');
       const isAllowed = file.type === tool.mineType || file.type === allowedType;
 
@@ -58,12 +55,10 @@ const ToolUpload = () => {
     }));
 
     const validFiles = processedFiles.filter(f => f !== null);
-
     if (validFiles.length === 0) {
       alert(tool.noFileAlert || "Invalid file type for this tool.");
       return;
     }
-
     setSelectedFiles(prev => [...prev, ...validFiles]);
   };
 
@@ -72,7 +67,6 @@ const ToolUpload = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedFiles.length < (tool.minFiles || 1) || isLoading) return;
-
     setIsLoading(true);
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append('files', file));
@@ -80,10 +74,8 @@ const ToolUpload = () => {
     try {
       let API_BASE1 = import.meta.env.VITE_SERVER_API;
       let API_BASE2 = import.meta.env.VITE_SERVER_API2;
-
       const response = await fetch(`${tool.api === 1 ? API_BASE1 : API_BASE2}${tool.action}`, {
-        method: "POST",
-        body: formData
+        method: "POST", body: formData
       });
 
       if (response.ok) {
@@ -92,11 +84,9 @@ const ToolUpload = () => {
         const a = document.createElement("a");
         a.href = url;
         const timestamp = Date.now();
-
         a.download = selectedFiles.length === 1
           ? `${tool.downloadFileName}${timestamp}${tool.downloadFileType1}`
           : `${tool.downloadFileName}${timestamp}${tool.downloadFileType2}`;
-
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -116,7 +106,8 @@ const ToolUpload = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <nav className="bg-white border-b border-slate-200 py-3 px-6">
+      {/* BIG FONT BREADCRUMB */}
+    <nav className="bg-white border-b border-slate-200 py-3 px-6">
         <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs text-slate-400">
           <span className="cursor-pointer hover:text-red-500" onClick={() => navigate('/')}>Home</span>
           <span>&rsaquo;</span>
@@ -130,7 +121,6 @@ const ToolUpload = () => {
           <p className="text-slate-500">{tool.p}</p>
         </div>
 
-        {/* Interaction Area */}
         <section
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
@@ -166,7 +156,6 @@ const ToolUpload = () => {
           )}
         </section>
 
-        {/* File Queue */}
         {selectedFiles.length > 0 && !isSuccess && (
           <div className="animate-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center mb-4 px-1">
@@ -174,14 +163,14 @@ const ToolUpload = () => {
               <button onClick={() => setSelectedFiles([])} className="text-red-500 text-xs font-bold hover:underline cursor-pointer">Clear all</button>
             </div>
 
-            <div className="space-y-2 mb-10">
+            {/* SCROLLABLE QUEUE CONTAINER (Max 4-5 files) */}
+            <div className="space-y-2 mb-6 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
               {selectedFiles.map((file, index) => (
                 <div key={index} className="flex items-center gap-4 p-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-red-200 transition-all">
                   <div className="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center shrink-0">
                     <img src={tool.icon || tool.img} alt="" className="w-7 h-8" />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    {/* leading-none and mb-0 removes all space between name and size */}
                     <p className="font-bold text-slate-800 truncate text-[13px] leading-none mb-1">{file.name}</p>
                     <div className="flex items-center gap-1 text-[10px] text-slate-500 leading-none mt-[2px] font-medium">
                       <span>{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
@@ -193,50 +182,43 @@ const ToolUpload = () => {
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-1 pr-1">
-                    <button onClick={() => removeFile(index)} className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-all">
-                      <Trash2 size={16} strokeWidth={2.5} />
-                    </button>
-                  </div>
+                  <button onClick={() => removeFile(index)} className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-all">
+                    <Trash2 size={16} strokeWidth={2.5} />
+                  </button>
                 </div>
               ))}
             </div>
 
-            {/* Ready Action Bar */}
             <div className="bg-[#1E293B] rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between shadow-xl">
               <div className="text-white text-center md:text-left mb-4 md:mb-0">
                 <h4 className="font-bold text-base leading-tight">Ready to {tool.route.split('-')[0]}?</h4>
                 <p className="text-slate-400 text-xs mt-0.5">{selectedFiles.length} {selectedFiles.length === 1 ? 'file' : 'files'} ready for processing.</p>
               </div>
-              <button
-                onClick={handleSubmit}
-                disabled={isButtonDisabled}
-                className={`w-full md:w-auto px-10 py-3 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 
-                  ${isButtonDisabled ? 'bg-slate-600 cursor-not-allowed opacity-50' : 'bg-red-500 hover:bg-red-600 cursor-pointer shadow-lg shadow-red-500/20'}`}
-              >
-                {isLoading ? <Loader2 className="animate-spin" size={18} /> : <>Download NOW <span className="material-symbols-outlined text-sm">magic_button</span></>}
+              <button onClick={handleSubmit} disabled={isButtonDisabled} className={`w-full md:w-auto px-10 py-3 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${isButtonDisabled ? 'bg-slate-600 cursor-not-allowed opacity-50' : 'bg-red-500 hover:bg-red-600 cursor-pointer shadow-lg shadow-red-500/20'}`}>
+                {isLoading ? <Loader2 className="animate-spin" size={18} /> : <>Download NOW</>}
               </button>
             </div>
           </div>
         )}
       </main>
-      {/* FEATURE FOOTER (SECURE, QUALITY, WORKS EVERYWHERE) */}
+      
+      {/* FEATURE FOOTER */}
       <section className="bg-white border-t border-slate-100 py-12">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><ShieldCheck size={24} /></div>
-            <h4 className="font-bold text-slate-800 mb-1">Secure Processing</h4>
-            <p className="text-xs text-slate-400">Your files are encrypted and automatically deleted after processing.</p>
+        <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div>
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><ShieldCheck size={24} /></div>
+            <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Secure</h4>
+            <p className="text-xs text-slate-400">Files are encrypted and deleted after processing.</p>
           </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><Zap size={24} /></div>
-            <h4 className="font-bold text-slate-800 mb-1">Original Quality</h4>
-            <p className="text-xs text-slate-400">Get high-quality results without compromising the integrity of your data.</p>
+          <div>
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><Zap size={24} /></div>
+            <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Fast</h4>
+            <p className="text-xs text-slate-400">High-speed processing without quality loss.</p>
           </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><Globe size={24} /></div>
-            <h4 className="font-bold text-slate-800 mb-1">Works Everywhere</h4>
-            <p className="text-xs text-slate-400">Access our tools from any browser or device, anywhere in the world.</p>
+          <div>
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><Globe size={24} /></div>
+            <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Universal</h4>
+            <p className="text-xs text-slate-400">Works on all devices and browsers.</p>
           </div>
         </div>
       </section>
