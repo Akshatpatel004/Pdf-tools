@@ -3,13 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import tools from "../data/tools.json";
 import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
-import { Loader2, Trash2, CheckCircle2, Plus, X, ShieldCheck, Zap, Globe, GripVertical } from 'lucide-react';
+import { Loader2, Trash2, CheckCircle2, Plus, X, ShieldCheck, Zap, Globe, GripVertical, ArrowLeft } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 
 const ToolSplit = () => {
   const { toolName } = useParams();
   const navigate = useNavigate();
-  // Target split-pdf specifically but fallback to toolName
   const tool = tools.find(t => t.route === "split-pdf") || tools.find(t => t.route === toolName);
   
   const [selectedFile, setSelectedFile] = useState(null);
@@ -18,7 +17,6 @@ const ToolSplit = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
-  // Split specific states
   const [ranges, setRanges] = useState([{ from: 1, to: 1 }]);
   const [mergePdf, setMergePdf] = useState(false);
   
@@ -30,7 +28,6 @@ const ToolSplit = () => {
     window.onbeforeunload = isLoading ? () => true : null;
   }, [isLoading]);
 
-  // Reset range and merge option when file changes
   useEffect(() => {
     if (selectedFile) {
       setRanges([{ from: 1, to: totalPageCount }]);
@@ -66,7 +63,6 @@ const ToolSplit = () => {
     const newRanges = [...ranges];
     let numValue = value === "" ? "" : parseInt(value);
     
-    // Boundary checks
     if (numValue !== "" && numValue > totalPageCount) numValue = totalPageCount;
     if (numValue !== "" && numValue < 1) numValue = 1;
     
@@ -106,7 +102,6 @@ const ToolSplit = () => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        // If merging multiple ranges or single range, download as PDF, else ZIP
         const extension = finalMergeValue ? ".pdf" : ".zip";
         a.download = `${tool.downloadFileName || 'split_'}${Date.now()}${extension}`;
         document.body.appendChild(a);
@@ -126,21 +121,24 @@ const ToolSplit = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <nav className="bg-white border-b border-slate-200 py-3 px-6">
-        <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs text-slate-400">
-          <span className="cursor-pointer hover:text-red-500" onClick={() => navigate('/')}>Home</span>
-          <span>&rsaquo;</span>
-          <span className="font-medium text-slate-900 capitalize">Split PDF</span>
-        </div>
-      </nav>
+      <main className="max-w-4xl mx-auto px-4 py-6 md:py-12">
+        {/* RESPONSIVE NAV SECTION */}
+        <nav className="flex items-center justify-between mb-8">
+            <div className="hidden md:flex items-center gap-3 text-sm tracking-tight">
+                <span className="cursor-pointer font-medium text-slate-400 hover:text-red-500 transition-colors uppercase text-[11px] tracking-widest" onClick={() => navigate('/')}>Home</span>
+                <span className="text-slate-300 font-light text-lg">/</span>
+                <span className="font-medium text-slate-600 text-base md:text-lg capitalize">Split PDF</span>
+            </div>
+            <button onClick={() => navigate(-1)} className="md:hidden p-2 -ml-2 text-slate-600 active:bg-slate-100 rounded-full transition-colors"><ArrowLeft size={24} /></button>
+            <div className="md:hidden font-medium text-base text-slate-900 tracking-tight capitalize">Split PDF</div>
+            <div className="w-8 md:hidden"></div>
+        </nav>
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-[#1E293B] mb-2">{tool.h1}</h1>
           <p className="text-slate-500">{tool.p}</p>
         </div>
 
-        {/* Interaction Area */}
         <section
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
@@ -190,7 +188,6 @@ const ToolSplit = () => {
           )}
         </section>
 
-        {/* Range Settings */}
         {selectedFile && !isSuccess && (
           <div className="animate-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center mb-4 px-1">
@@ -224,7 +221,6 @@ const ToolSplit = () => {
               ))}
             </div>
 
-            {/* Action Bar */}
             <div className="bg-[#1E293B] rounded-3xl p-6 shadow-xl border border-slate-700/50">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="text-white">
@@ -245,7 +241,6 @@ const ToolSplit = () => {
         )}
       </main>
 
-      {/* FEATURE FOOTER */}
       <section className="bg-white border-t border-slate-100 py-12">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="flex flex-col items-center text-center">

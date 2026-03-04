@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import tools from "../data/tools.json";
 import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
-import { Loader2, Trash2, GripVertical, CheckCircle2, ShieldCheck, Zap, Globe } from 'lucide-react';
+import { Loader2, Trash2, GripVertical, CheckCircle2, ShieldCheck, Zap, Globe, ArrowLeft } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 
 const ToolUpload = () => {
@@ -106,16 +106,19 @@ const ToolUpload = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      {/* BIG FONT BREADCRUMB */}
-    <nav className="bg-white border-b border-slate-200 py-3 px-6">
-        <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs text-slate-400">
-          <span className="cursor-pointer hover:text-red-500" onClick={() => navigate('/')}>Home</span>
-          <span>&rsaquo;</span>
-          <span className="font-medium text-slate-900 capitalize">{tool.title.replace(/-/g, ' ')}</span>
-        </div>
-      </nav>
+      <main className="max-w-4xl mx-auto px-4 py-6 md:py-12">
+        {/* RESPONSIVE NAV SECTION */}
+        <nav className="flex items-center justify-between mb-8">
+            <div className="hidden md:flex items-center gap-3 text-sm tracking-tight">
+                <span className="cursor-pointer font-medium text-slate-400 hover:text-red-500 transition-colors uppercase text-[11px] tracking-widest" onClick={() => navigate('/')}>Home</span>
+                <span className="text-slate-300 font-light text-lg">/</span>
+                <span className="font-medium text-slate-600 text-base md:text-lg capitalize">{tool.title.replace(/-/g, ' ')}</span>
+            </div>
+            <button onClick={() => navigate(-1)} className="md:hidden p-2 -ml-2 text-slate-600 active:bg-slate-100 rounded-full transition-colors"><ArrowLeft size={24} /></button>
+            <div className="md:hidden font-medium text-base text-slate-900 tracking-tight capitalize">{tool.title.replace(/-/g, ' ')}</div>
+            <div className="w-8 md:hidden"></div>
+        </nav>
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-[#1E293B] mb-2">{tool.h1}</h1>
           <p className="text-slate-500">{tool.p}</p>
@@ -163,7 +166,6 @@ const ToolUpload = () => {
               <button onClick={() => setSelectedFiles([])} className="text-red-500 text-xs font-bold hover:underline cursor-pointer">Clear all</button>
             </div>
 
-            {/* SCROLLABLE QUEUE CONTAINER (Max 4-5 files) */}
             <div className="space-y-2 mb-6 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
               {selectedFiles.map((file, index) => (
                 <div key={index} className="flex items-center gap-4 p-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-red-200 transition-all">
@@ -202,7 +204,6 @@ const ToolUpload = () => {
         )}
       </main>
       
-      {/* FEATURE FOOTER */}
       <section className="bg-white border-t border-slate-100 py-12">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>

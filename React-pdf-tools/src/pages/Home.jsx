@@ -5,11 +5,10 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase-config.js";
 import Footer from "../component/Footer.jsx"; 
 
-const Home = ({ searchQuery }) => {
+const Home = ({ searchQuery, showAll, setShowAll }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [showAll, setShowAll] = useState(false);
-  const [showQR, setShowQR] = useState(false); // State for QR Modal
+  const [showQR, setShowQR] = useState(false); 
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -66,7 +65,6 @@ const Home = ({ searchQuery }) => {
               <p className="text-sm text-slate-500 mb-6">Open your camera or Telegram to scan</p>
               
               <div className="mx-auto flex aspect-square w-full items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 p-4">
-                {/* Replace the src with your actual bot QR code image link */}
                 <img 
                   src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/Allin1_Pdftools_bot" 
                   alt="Telegram Bot QR Code" 
@@ -115,7 +113,7 @@ const Home = ({ searchQuery }) => {
             </div>
           </section>
 
-          {/* Telegram Banner with QR Button */}
+          {/* Telegram Banner */}
           {searchQuery === "" && (
             <section className="mb-10">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 md:py-4 md:px-8 rounded-2xl bg-[#24A1DE] shadow-md border border-blue-400/20 transition-all">
@@ -135,7 +133,6 @@ const Home = ({ searchQuery }) => {
                   <button 
                     onClick={() => setShowQR(true)}
                     className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 text-white hover:bg-white hover:text-[#24A1DE] transition-all active:scale-95 cursor-pointer"
-                    title="Show QR Code"
                   >
                     <span className="material-symbols-outlined text-2xl">qr_code_2</span>
                   </button>
@@ -152,7 +149,6 @@ const Home = ({ searchQuery }) => {
             </section>
           )}
 
-          {/* Dynamic Category Mapping */}
           {displayedCategories.map((categoryName, index) => {
             let categoryTools = filteredTools.filter(t => t.Category === categoryName);
             if (index === 0 && !showAll && searchQuery === "") {

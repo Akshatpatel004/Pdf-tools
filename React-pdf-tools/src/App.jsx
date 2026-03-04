@@ -4,15 +4,16 @@ import Home from "./pages/Home";
 import ToolUpload from "./pages/ToolUpload";
 import ToolSplit from "./pages/ToolSplit";
 import Login from "./pages/Login";
+import PasswordProtect from "./pages/PasswordProtect";
 import AiChatBot from "./component/AiChatBot";
 import Navbar from "./component/Navbar"; 
 
 const AppContent = () => {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAll, setShowAll] = useState(false); // State moved here
   
   const isLoginPage = location.pathname === "/login";
-  // Logic: Show search only if we are exactly on the home page
   const isHomePage = location.pathname === "/";
 
   return (
@@ -21,14 +22,24 @@ const AppContent = () => {
         <Navbar 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
-          showSearch={isHomePage} // Pass visibility flag
+          showSearch={isHomePage} 
         />
       )}
 
       <Routes>
-        <Route path="/" element={<Home searchQuery={searchQuery} />} />
+        <Route 
+          path="/" 
+          element={
+            <Home 
+              searchQuery={searchQuery} 
+              showAll={showAll} 
+              setShowAll={setShowAll} 
+            />
+          } 
+        />
         <Route path="/tool/split-pdf" element={<ToolSplit />} />
         <Route path="/tool/:toolName" element={<ToolUpload />} />
+        <Route path="/tool/protect/:toolName" element={<PasswordProtect />} />
         <Route path="/login" element={<Login />} />
       </Routes>
       {!isLoginPage && <AiChatBot />}
