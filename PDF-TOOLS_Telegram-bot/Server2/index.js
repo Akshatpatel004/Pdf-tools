@@ -6,16 +6,15 @@ const multer = require('multer')
 const upload = multer({ dest: 'Uploads' })
 const port = 3005;
 let toPdf = require('office-to-pdf');
-const pdfpoppler = require("pdf-poppler");
 const archiver = require('archiver');
-const { exec , spawn} = require("child_process");
+const { exec } = require("child_process");
 const util = require('util');
 const execPromise = util.promisify(exec);
 const cors = require("cors");
 app.use(cors());
 
 
-const main_dir = ["Download/Office_PDF/", "Download/compress-pdf/", "Download/temp_pdf/"];
+const main_dir = ["Download/Office_PDF/", "Download/compress-pdf/", "Download/temp_pdf/", "Download/protect_pdf/"];
 function cre_dir() {
     for (let dir of main_dir) {
         if (!fs.existsSync(dir)) {
@@ -61,7 +60,7 @@ app.get('/', async (req, res) => {
     res.send("office-to-pdf_libreoffice server is alive");
 });
 
-app.post('/office-to-pdf_converter', upload.any(), async (req, res) => {
+app.post('/office-to-pdf_converter', upload.any('files'), async (req, res) => {
     if (!req.files || req.files.length === 0) {
         console.log("no files uploaded");
         return res.status(400).send("no files uploaded")
@@ -123,7 +122,7 @@ app.post('/office-to-pdf_converter', upload.any(), async (req, res) => {
     }
 })
 
-app.post('/compress-pdf_size', upload.any(), async (req, res) => {
+app.post('/compress-pdf_size', upload.any('files'), async (req, res) => {
     if (!req.files || req.files.length === 0) return res.status(400).send("No files uploaded");
 
     cre_dir();
@@ -174,6 +173,112 @@ app.post('/compress-pdf_size', upload.any(), async (req, res) => {
     }
 });
 
+app.post('/lock_pdf', upload.any('files'), async (req, res) => {
+    if (!req.files || req.files.length === 0) {
+        console.log("no files uploaded");
+        return res.status(400).send("no files uploaded");
+    } else if (!req.body.password) {
+        req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+        console.log("Password not provided");
+        return res.status(400).send("Password not provided");
+    } else {
+        cre_dir();
+        console.log(req.files.length, req.files);
+        try {
+            let output_filename = `Download/protect_pdf/lock_pdf_${Date.now()}.pdf`
+            let cmd = `qpdf --encrypt ${req.body.password} ${req.body.password} 256 -- ${req.files[0].path} ${output_filename}`;
+
+            await execPromise(cmd, function (err) {
+                if (err) {
+                    req.files.forEach((file) => fs.unlinkSync(file.path));
+                    if (fs.existsSync(output_filename)) {
+                        fs.unlinkSync(output_filename)
+                    }
+                    console.error("Error occured: " + err);
+                    return res.status(400).send("no files uploaded");
+                } else {
+                    console.log("PDF encrypted successfully");
+                    res.download(output_filename, (err) => {
+                        if (err) {
+                            if (fs.existsSync(output_filename)) {
+                                fs.unlinkSync(output_filename)
+                            }
+                            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+                        }
+                        console.log("File downloadedd successfully");
+                        setTimeout(() => {
+                            if (fs.existsSync(output_filename)) {
+                                fs.unlinkSync(output_filename)
+                            }
+                            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+                        }, 5000)
+                    });
+                }
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(500).send("Error processing PDF");
+            if (fs.existsSync(output_filename)) {
+                fs.unlinkSync(output_filename)
+            }
+            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+        }
+    }
+})
+
+
+app.post('/unlock_pdf', upload.any('files'), async (req, res) => {
+    if (!req.files || req.files.length === 0) {
+        console.log("no files uploaded");
+        return res.status(400).send("no files uploaded");
+    } else if (!req.body.password) {
+        req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+        console.log("Password not provided");
+        return res.status(400).send("Password not provided");
+    } else {
+        cre_dir();
+        console.log(req.files.length, req.files);
+        try {
+            let output_filename = `Download/protect_pdf/unlock_pdf_${Date.now()}.pdf`
+            let cmd = `qpdf --password=${req.body.password} --decrypt ${req.files[0].path} ${output_filename}`;
+
+            await execPromise(cmd, function (err) {
+                if (err) {
+                    req.files.forEach((file) => fs.unlinkSync(file.path));
+                    if (fs.existsSync(output_filename)) {
+                        fs.unlinkSync(output_filename)
+                    }
+                    console.error("Error occured: " + err);
+                    return res.status(400).send("no files uploaded");
+                } else {
+                    console.log("PDF Decrypt successfully");
+                    res.download(output_filename, (err) => {
+                        if (err) {
+                            if (fs.existsSync(output_filename)) {
+                                fs.unlinkSync(output_filename)
+                            }
+                            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+                        }
+                        console.log("File downloadedd successfully");
+                        setTimeout(() => {
+                            if (fs.existsSync(output_filename)) {
+                                fs.unlinkSync(output_filename)
+                            }
+                            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+                        }, 5000)
+                    });
+                }
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(500).send("Error processing PDF");
+            if (fs.existsSync(output_filename)) {
+                fs.unlinkSync(output_filename)
+            }
+            req.files.forEach(f => fs.existsSync(f.path) && fs.unlinkSync(f.path));
+        }
+    }
+})
 
 app.listen(port, () => {
     console.log(`app is listening in this port http://localhost:${port}`)
