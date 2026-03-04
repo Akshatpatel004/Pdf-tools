@@ -12,10 +12,7 @@ const PasswordProtect = () => {
     const { toolName } = useParams();
     const navigate = useNavigate();
 
-    // Find tool by matching the route in JSON
     const tool = tools.find(t => t.route.includes(toolName.replace('-', ' ')));
-
-    // STRICT MODE CHECK: Determine if we are unlocking based on URL
     const isUnlockPage = toolName.toLowerCase().includes('unlock');
 
     const [selectedFile, setSelectedFile] = useState(null);
@@ -50,7 +47,7 @@ const PasswordProtect = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); 
         if (!selectedFile || isLoading) return;
         if (!password) { alert("Password required."); return; }
         if (!isUnlockPage && password !== confirmPassword) { alert("Passwords do not match."); return; }
@@ -162,27 +159,50 @@ const PasswordProtect = () => {
                     </div>
 
                     <div className="lg:col-span-5">
-                        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-200 shadow-sm">
+                        {/* THE FIX: Added form with name, and standard HTML structure */}
+                        <form name="password-form" onSubmit={handleSubmit} className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-2 mb-6">
                                 <div className="p-2 bg-red-50 rounded-lg text-red-500">{isUnlockPage ? <Unlock size={20} /> : <Lock size={20} />}</div>
                                 <h2 className="text-xl font-black text-slate-800 tracking-tight">{isUnlockPage ? 'Unlock Settings' : 'Security Settings'}</h2>
                             </div>
                             <div className="space-y-5">
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">{isUnlockPage ? 'PDF Password' : 'Create Password'}</label>
+                                    <label htmlFor="main-password" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                        {isUnlockPage ? 'PDF Password' : 'Create Password'}
+                                    </label>
                                     <div className="relative">
                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                        <input type={showPass ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={isUnlockPage ? "Enter password here" : "••••••••"} className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-red-500 outline-none font-bold text-sm text-slate-700" />
-                                        <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 cursor-pointer">{showPass ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                                        <input 
+                                            id="main-password"
+                                            name="password"
+                                            autoComplete={isUnlockPage ? "current-password" : "new-password"}
+                                            type={showPass ? "text" : "password"} 
+                                            value={password} 
+                                            onChange={(e) => setPassword(e.target.value)} 
+                                            placeholder={isUnlockPage ? "Enter password here" : "••••••••"} 
+                                            className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-red-500 outline-none font-bold text-sm text-slate-700" 
+                                        />
+                                        <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 cursor-pointer">
+                                            {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
                                     </div>
                                 </div>
 
                                 {!isUnlockPage && (
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm Password</label>
+                                        <label htmlFor="confirm-password" className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm Password</label>
                                         <div className="relative">
                                             <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                            <input type={showPass ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-red-500 outline-none font-bold text-sm text-slate-700" />
+                                            <input 
+                                                id="confirm-password"
+                                                name="confirm-password"
+                                                autoComplete="new-password"
+                                                type={showPass ? "text" : "password"} 
+                                                value={confirmPassword} 
+                                                onChange={(e) => setConfirmPassword(e.target.value)} 
+                                                placeholder="••••••••" 
+                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-red-500 outline-none font-bold text-sm text-slate-700" 
+                                            />
                                         </div>
                                     </div>
                                 )}
@@ -196,9 +216,8 @@ const PasswordProtect = () => {
                                     </p>
                                 </div>
 
-                                {/* Updated Action Button to match image design */}
                                 <button 
-                                    onClick={handleSubmit} 
+                                    type="submit"
                                     disabled={isLoading || !selectedFile} 
                                     className={`w-full py-4 rounded-2xl font-black text-white text-base shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 uppercase tracking-tight ${isLoading || !selectedFile ? 'bg-slate-300 cursor-not-allowed' : 'bg-[#E53E3E] hover:bg-[#C53030] shadow-red-500/30 cursor-pointer'}`}
                                 >
@@ -212,7 +231,7 @@ const PasswordProtect = () => {
                                     )}
                                 </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
 

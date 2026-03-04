@@ -103,7 +103,7 @@ const ToolSplit = () => {
         const a = document.createElement("a");
         a.href = url;
         const extension = finalMergeValue ? ".pdf" : ".zip";
-        a.download = `${tool.downloadFileName || 'split_'}${Date.now()}${extension}`;
+        a.download = `${tool.downloadFileName || 'split_'}${file.name.replace(/\.[^/.]+$/, "")}${Date.now()}${extension}`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -172,7 +172,7 @@ const ToolSplit = () => {
             <div className="w-full max-w-md">
                <div className="flex items-center gap-4 p-2 bg-white border border-slate-200 rounded-xl shadow-sm">
                   <div className="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center shrink-0">
-                    <img src={tool.icon || tool.img} alt="" className="w-7 h-8" />
+                    <img src={tool.icon || tool.img} alt="" className="w-8 h-8" />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <p className="font-bold text-slate-800 truncate text-[13px] leading-none mb-1">{selectedFile.name}</p>

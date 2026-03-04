@@ -214,5 +214,25 @@
     "downloadFileName": "flexxpdf_unlock_pdf_",
     "downloadFileType1": ".pdf",
     "downloadFileType2": ".pdf"
+  },
+   {
+    "route": "ocr_pdf",
+    "img": "/icons/ocr pdf.png",
+    "title": "OCR PDF",
+    "disc": "Easily convert scanned PDF into searchable and selectable documents.",
+    "action": "/ocr_pdf",
+    "Category": "Edit & Security",
+    "h1": "OCR PDF",
+    "p": "Convert non-selectable PDF files into selectable and searchable PDF with high accuracy.",
+    "accept": ".pdf",
+    "minFiles": 1,
+    "api": 1,
+    "icon": "/icons/pdf.png",
+    "mineType": "application/pdf",
+    "noFileAlert": "Please upload PDF file",
+    "failAlert": "❌ ocr converting fail",
+    "downloadFileName": "flexxpdf_ocr_pdf_",
+    "downloadFileType1": ".pdf",
+    "downloadFileType2": ".pdf"
   }
 ]

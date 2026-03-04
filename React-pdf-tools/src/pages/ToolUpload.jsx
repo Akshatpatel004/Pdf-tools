@@ -85,7 +85,7 @@ const ToolUpload = () => {
         a.href = url;
         const timestamp = Date.now();
         a.download = selectedFiles.length === 1
-          ? `${tool.downloadFileName}${timestamp}${tool.downloadFileType1}`
+          ? `${tool.downloadFileName}${file.name.replace(/\.[^/.]+$/, "")}${timestamp}${tool.downloadFileType1}`
           : `${tool.downloadFileName}${timestamp}${tool.downloadFileType2}`;
         document.body.appendChild(a);
         a.click();
@@ -170,7 +170,7 @@ const ToolUpload = () => {
               {selectedFiles.map((file, index) => (
                 <div key={index} className="flex items-center gap-4 p-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-red-200 transition-all">
                   <div className="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center shrink-0">
-                    <img src={tool.icon || tool.img} alt="" className="w-7 h-8" />
+                    <img src={tool.icon || tool.img} alt="" className="w-8 h-8" />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <p className="font-bold text-slate-800 truncate text-[13px] leading-none mb-1">{file.name}</p>
