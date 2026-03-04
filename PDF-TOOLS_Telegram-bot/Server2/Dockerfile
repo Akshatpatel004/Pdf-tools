@@ -22,5 +22,4 @@ COPY . .
 EXPOSE 3005
 
 # Start the application
-
 CMD ["node", "index.js"]
