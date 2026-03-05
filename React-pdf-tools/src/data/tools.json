@@ -103,7 +103,7 @@
     "title": "Compress PDF",
     "disc": "Reduce file size while optimizing for maximal PDF quality.",
     "action": "/compress-pdf_size",
-    "Category": "Popular Tools",
+    "Category": "Optimize PDF",
     "h1": "Compress PDF Size",
     "p": "Upload PDF files that you want to reduce file size ..",
     "accept": ".pdf",
@@ -221,7 +221,7 @@
     "title": "OCR PDF",
     "disc": "Easily convert scanned PDF into searchable and selectable documents.",
     "action": "/ocr_pdf",
-    "Category": "Edit & Security",
+    "Category": "Optimize PDF",
     "h1": "OCR PDF",
     "p": "Convert non-selectable PDF files into selectable and searchable PDF with high accuracy.",
     "accept": ".pdf",
@@ -235,4 +235,5 @@
     "downloadFileType1": ".pdf",
     "downloadFileType2": ".pdf"
   }
+
 ]
