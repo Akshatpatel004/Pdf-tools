@@ -23,6 +23,61 @@ const ToolUpload = () => {
     window.onbeforeunload = isLoading ? () => true : null;
   }, [isLoading]);
 
+  // --- CLOUD INTEGRATION LOGIC ---
+
+  const handleCloudImport = async (url, name, token = null) => {
+    setIsLoading(true);
+    try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(url, { headers });
+      const blob = await response.blob();
+      const file = new File([blob], name, { type: blob.type });
+      handleFiles([file]);
+    } catch (err) {
+      alert("Failed to import cloud file.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const openGoogleDrive = () => {
+    if (!window.google) return alert("Google SDK not loaded");
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.readonly',
+      callback: async (response) => {
+        if (response.error) return;
+        const picker = new window.google.picker.PickerBuilder()
+          .addView(window.google.picker.ViewId.DOCS)
+          .setOAuthToken(response.access_token)
+          .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY)
+          .setCallback((data) => {
+            if (data.action === window.google.picker.Action.PICKED) {
+              const doc = data.docs[0];
+              const downloadUrl = `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media`;
+              handleCloudImport(downloadUrl, doc.name, response.access_token);
+            }
+          })
+          .build();
+        picker.setVisible(true);
+      },
+    });
+    client.requestAccessToken();
+  };
+
+  const openDropbox = () => {
+    if (!window.Dropbox) return alert("Dropbox SDK not loaded");
+    window.Dropbox.choose({
+      success: (files) => {
+        handleCloudImport(files[0].link, files[0].name);
+      },
+      linkType: "direct",
+      extensions: ['.pdf', '.docx', '.pptx', '.jpg', '.png'],
+    });
+  };
+
+  // --- END CLOUD LOGIC ---
+
   const getPageCount = async (file) => {
     try {
       if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith('.pdf')) return null;
@@ -85,7 +140,7 @@ const ToolUpload = () => {
         a.href = url;
         const timestamp = Date.now();
         a.download = selectedFiles.length === 1
-          ? `${tool.downloadFileName}${file.name.replace(/\.[^/.]+$/, "")}${timestamp}${tool.downloadFileType1}`
+          ? `${tool.downloadFileName}${selectedFiles[0].name.replace(/\.[^/.]+$/, "")}${timestamp}${tool.downloadFileType1}`
           : `${tool.downloadFileName}${timestamp}${tool.downloadFileType2}`;
         document.body.appendChild(a);
         a.click();
@@ -107,7 +162,6 @@ const ToolUpload = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <main className="max-w-4xl mx-auto px-4 py-6 md:py-12">
-        {/* RESPONSIVE NAV SECTION */}
         <nav className="flex items-center justify-between mb-8">
             <div className="hidden md:flex items-center gap-3 text-sm tracking-tight">
                 <span className="cursor-pointer font-medium text-slate-400 hover:text-red-500 transition-colors uppercase text-[11px] tracking-widest" onClick={() => navigate('/')}>Home</span>
@@ -151,9 +205,23 @@ const ToolUpload = () => {
                 Supported: {tool.accept || "PDF"}<br />
                 <span className="opacity-70 font-medium text-red-400">Min. {tool.minFiles} {tool.minFiles === 1 ? 'file' : 'files'} required</span>
               </p>
-              <button onClick={() => fileInputRef.current.click()} className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all cursor-pointer">
-                Select Files
-              </button>
+              
+              <div className="flex flex-col items-center gap-4">
+                <button onClick={() => fileInputRef.current.click()} className="px-10 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all cursor-pointer">
+                  Select Files
+                </button>
+
+                {/* Cloud Upload Buttons - OneDrive Removed */}
+                <div className="flex items-center gap-4 pt-4">
+                  <button onClick={openGoogleDrive} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer" title="Google Drive">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" className="w-6 h-6" alt="Google Drive" />
+                  </button>
+                  <button onClick={openDropbox} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer" title="Dropbox">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg" className="w-6 h-6" alt="Dropbox" />
+                  </button>
+                </div>
+              </div>
+
               <input type="file" ref={fileInputRef} onChange={(e) => handleFiles(e.target.files)} className="hidden" multiple accept={tool.accept} />
             </>
           )}
