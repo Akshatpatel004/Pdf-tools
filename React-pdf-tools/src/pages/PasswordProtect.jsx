@@ -5,7 +5,7 @@ import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
 import {
     Loader2, Trash2, ShieldCheck, Zap,
-    Lock, Unlock, Eye, EyeOff, ArrowLeft, Shield
+    Lock, Unlock, Eye, EyeOff, ArrowLeft, Shield, Globe
 } from 'lucide-react';
 
 const PasswordProtect = () => {
@@ -30,6 +30,59 @@ const PasswordProtect = () => {
     useEffect(() => {
         window.onbeforeunload = isLoading ? () => true : null;
     }, [isLoading]);
+
+    // --- CLOUD LOGIC ---
+    const handleCloudImport = async (url, name, token = null) => {
+        setIsLoading(true);
+        try {
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
+            const blob = await response.blob();
+            const file = new File([blob], name, { type: blob.type });
+            handleFiles([file]);
+        } catch (err) {
+            alert("Failed to import cloud file.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const openGoogleDrive = () => {
+        if (!window.google || !window.gapi) return alert("Google SDK is still loading.");
+        
+        const client = window.google.accounts.oauth2.initTokenClient({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.readonly',
+            callback: async (response) => {
+                if (response.error) return;
+                
+                window.gapi.load('picker', () => {
+                    const picker = new window.google.picker.PickerBuilder()
+                        .addView(window.google.picker.ViewId.DOCS)
+                        .setOAuthToken(response.access_token)
+                        .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY)
+                        .setCallback((data) => {
+                            if (data.action === window.google.picker.Action.PICKED) {
+                                const doc = data.docs[0];
+                                const downloadUrl = `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media`;
+                                handleCloudImport(downloadUrl, doc.name, response.access_token);
+                            }
+                        }).build();
+                    picker.setVisible(true);
+                });
+            },
+        });
+        client.requestAccessToken();
+    };
+
+    const openDropbox = () => {
+        if (!window.Dropbox) return alert("Dropbox SDK not loaded");
+        window.Dropbox.choose({
+            success: (files) => handleCloudImport(files[0].link, files[0].name),
+            linkType: "direct",
+            extensions: ['.pdf'],
+        });
+    };
 
     const handleFiles = (files) => {
         const file = files[0];
@@ -85,8 +138,6 @@ const PasswordProtect = () => {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
             <main className="max-w-6xl mx-auto px-4 py-6 md:py-10">
-
-                {/* NAV SECTION */}
                 <nav className="flex items-center justify-between mb-8">
                     <div className="hidden md:flex items-center gap-3 text-sm tracking-tight">
                         <span className="cursor-pointer font-medium text-slate-400 hover:text-red-500 transition-colors uppercase text-[11px] tracking-widest" onClick={() => navigate('/')}>Home</span>
@@ -98,7 +149,6 @@ const PasswordProtect = () => {
                     <div className="w-8 md:hidden"></div>
                 </nav>
 
-                {/* HEADER TEXT */}
                 <div className={`text-center mb-10 ${selectedFile ? 'hidden md:block' : 'block'}`}>
                     <h1 className="text-3xl md:text-4xl font-black text-[#1E293B] mb-2">
                         {isUnlockPage ? "Unlock PDF" : "Protect PDF file"}
@@ -136,9 +186,21 @@ const PasswordProtect = () => {
                                     </div>
                                     <h3 className="text-xl font-bold text-slate-800 mb-2">{isUnlockPage ? "Ready to unlock?" : "Ready to protect?"}</h3>
                                     <p className="text-sm text-slate-400 mb-8 font-medium">Click button or drag your PDF here</p>
-                                    <button onClick={() => fileInputRef.current.click()} className="px-10 py-3.5 bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all cursor-pointer uppercase tracking-tight">
-                                        Select PDF file
-                                    </button>
+                                    
+                                    <div className="flex flex-col items-center gap-4">
+                                        <button onClick={() => fileInputRef.current.click()} className="px-10 py-3.5 bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all cursor-pointer uppercase tracking-tight">
+                                            Select PDF file
+                                        </button>
+
+                                        <div className="flex items-center gap-4 pt-4">
+                                            <button type="button" onClick={openGoogleDrive} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer" title="Google Drive">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" className="w-6 h-6" alt="Google Drive" />
+                                            </button>
+                                            <button type="button" onClick={openDropbox} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer" title="Dropbox">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg" className="w-6 h-6" alt="Dropbox" />
+                                            </button>
+                                        </div>
+                                    </div>
                                     <input type="file" ref={fileInputRef} onChange={(e) => handleFiles(e.target.files)} className="hidden" accept=".pdf" />
                                 </div>
                             ) : (
@@ -159,7 +221,6 @@ const PasswordProtect = () => {
                     </div>
 
                     <div className="lg:col-span-5">
-                        {/* THE FIX: Added form with name, and standard HTML structure */}
                         <form name="password-form" onSubmit={handleSubmit} className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-2 mb-6">
                                 <div className="p-2 bg-red-50 rounded-lg text-red-500">{isUnlockPage ? <Unlock size={20} /> : <Lock size={20} />}</div>
@@ -234,26 +295,28 @@ const PasswordProtect = () => {
                         </form>
                     </div>
                 </div>
-
-                {/* FEATURE FOOTER */}
-                <section className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-slate-100 pt-16">
-                    <div className="text-center">
-                        <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-red-500"><Shield size={28} /></div>
-                        <h4 className="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wider">Highest Security</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed font-medium px-4">We use the most advanced encryption technology to ensure your documents remain private.</p>
-                    </div>
-                    <div className="text-center">
-                        <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-red-500"><Trash2 size={28} /></div>
-                        <h4 className="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wider">Automatic Deletion</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed font-medium px-4">All uploaded files are permanently deleted from our servers within 1 hour of processing.</p>
-                    </div>
-                    <div className="text-center">
-                        <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-red-500"><Zap size={28} /></div>
-                        <h4 className="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wider">Blazing Fast</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed font-medium px-4">Our cloud infrastructure processes your files in seconds, regardless of their size.</p>
-                    </div>
-                </section>
             </main>
+
+            <section className="bg-white border-t border-slate-100 py-12">
+                <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div>
+                        <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><ShieldCheck size={24} /></div>
+                        <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Secure</h4>
+                        <p className="text-xs text-slate-400">Files are encrypted and deleted after processing.</p>
+                    </div>
+                    <div>
+                        <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><Zap size={24} /></div>
+                        <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Fast</h4>
+                        <p className="text-xs text-slate-400">High-speed processing without quality loss.</p>
+                    </div>
+                    <div>
+                        <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><Globe size={24} /></div>
+                        <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Universal</h4>
+                        <p className="text-xs text-slate-400">Works on all devices and browsers.</p>
+                    </div>
+                </div>
+            </section>
+            
             <Footer />
         </div>
     );
