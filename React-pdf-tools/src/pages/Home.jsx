@@ -5,7 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase-config.js";
 import Footer from "../component/Footer.jsx"; 
 
-const Home = ({ searchQuery, showAll, setShowAll }) => {
+const Home = ({ searchQuery }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [showQR, setShowQR] = useState(false); 
@@ -37,10 +37,6 @@ const Home = ({ searchQuery, showAll, setShowAll }) => {
     if (b === "Popular Tools") return 1;
     return 0;
   });
-
-  const displayedCategories = (showAll || searchQuery !== "") 
-    ? allCategories 
-    : [allCategories[0]];
 
   const handleJoinBot = () => {
     window.open(import.meta.env.VITE_telegram_bot_url, "_blank", "noopener,noreferrer");
@@ -149,11 +145,8 @@ const Home = ({ searchQuery, showAll, setShowAll }) => {
             </section>
           )}
 
-          {displayedCategories.map((categoryName, index) => {
-            let categoryTools = filteredTools.filter(t => t.Category === categoryName);
-            if (index === 0 && !showAll && searchQuery === "") {
-                categoryTools = categoryTools.slice(0, 4);
-            }
+          {allCategories.map((categoryName) => {
+            const categoryTools = filteredTools.filter(t => t.Category === categoryName);
             if (categoryTools.length === 0) return null;
 
             return (
@@ -165,11 +158,6 @@ const Home = ({ searchQuery, showAll, setShowAll }) => {
                     </span>
                     {categoryName}
                   </h2>
-                  {index === 0 && searchQuery === "" && (
-                    <span onClick={() => setShowAll(!showAll)} className="text-red-500 text-xs md:text-sm font-bold cursor-pointer hover:underline select-none bg-red-50 dark:bg-red-500/10 px-4 py-2 rounded-full transition-colors">
-                      {showAll ? "View Less" : "View All"}
-                    </span>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-500">
