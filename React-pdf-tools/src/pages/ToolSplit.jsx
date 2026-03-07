@@ -35,6 +35,64 @@ const ToolSplit = () => {
     }
   }, [selectedFile, totalPageCount]);
 
+  // --- CLOUD INTEGRATION LOGIC ---
+  const handleCloudImport = async (url, name, token = null) => {
+    setIsLoading(true);
+    try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(url, { headers });
+      const blob = await response.blob();
+      const file = new File([blob], name, { type: blob.type });
+      handleFiles([file]);
+    } catch (err) {
+      alert("Failed to import cloud file.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+const openGoogleDrive = () => {
+    if (!window.google || !window.google.picker) return alert("Google SDK is still warming up.");
+    
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.readonly',
+      callback: async (response) => {
+        if (response.error) return console.error(response.error);
+        
+        // Ensure the picker library is loaded before building
+        window.gapi.load('picker', () => {
+          const picker = new window.google.picker.PickerBuilder()
+            .addView(window.google.picker.ViewId.DOCS)
+            .setOAuthToken(response.access_token)
+            .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY)
+            .setCallback((data) => {
+              if (data.action === window.google.picker.Action.PICKED) {
+                const doc = data.docs[0];
+                const downloadUrl = `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media`;
+                handleCloudImport(downloadUrl, doc.name, response.access_token);
+              }
+            })
+            .build();
+          picker.setVisible(true);
+        });
+      },
+    });
+    client.requestAccessToken();
+  };
+
+  const openDropbox = () => {
+    if (!window.Dropbox) return alert("Dropbox SDK not loaded");
+    window.Dropbox.choose({
+      success: (files) => {
+        handleCloudImport(files[0].link, files[0].name);
+      },
+      linkType: "direct",
+      extensions: ['.pdf'],
+    });
+  };
+  // --- END CLOUD LOGIC ---
+
   const getPageCount = async (file) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -103,7 +161,7 @@ const ToolSplit = () => {
         const a = document.createElement("a");
         a.href = url;
         const extension = finalMergeValue ? ".pdf" : ".zip";
-        a.download = `${tool.downloadFileName || 'split_'}${file.name.replace(/\.[^/.]+$/, "")}${Date.now()}${extension}`;
+        a.download = `${tool.downloadFileName || 'split_'}${selectedFile.name.replace(/\.[^/.]+$/, "")}${Date.now()}${extension}`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -122,7 +180,6 @@ const ToolSplit = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <main className="max-w-4xl mx-auto px-4 py-6 md:py-12">
-        {/* RESPONSIVE NAV SECTION */}
         <nav className="flex items-center justify-between mb-8">
             <div className="hidden md:flex items-center gap-3 text-sm tracking-tight">
                 <span className="cursor-pointer font-medium text-slate-400 hover:text-red-500 transition-colors uppercase text-[11px] tracking-widest" onClick={() => navigate('/')}>Home</span>
@@ -163,9 +220,21 @@ const ToolSplit = () => {
               </div>
               <h3 className="text-lg font-bold text-slate-800">Drag and drop PDF here</h3>
               <p className="text-xs text-slate-400 mt-1 mb-6 text-center">Select the PDF you want to split</p>
-              <button onClick={() => fileInputRef.current.click()} className="px-6 py-2.5 bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 cursor-pointer">
-                Select PDF File
-              </button>
+              
+              <div className="flex flex-col items-center gap-4">
+                <button onClick={() => fileInputRef.current.click()} className="px-6 py-2.5 bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 cursor-pointer">
+                  Select PDF File
+                </button>
+
+                <div className="flex items-center gap-4 pt-4">
+                  <button onClick={openGoogleDrive} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" className="w-6 h-6" alt="Google Drive" />
+                  </button>
+                  <button onClick={openDropbox} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg" className="w-6 h-6" alt="Dropbox" />
+                  </button>
+                </div>
+              </div>
               <input type="file" ref={fileInputRef} onChange={(e) => handleFiles(e.target.files)} className="hidden" accept=".pdf" />
             </>
           ) : (
@@ -240,27 +309,25 @@ const ToolSplit = () => {
           </div>
         )}
       </main>
-
-      <section className="bg-white border-t border-slate-100 py-12">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><ShieldCheck size={24} /></div>
-            <h4 className="font-bold text-slate-800 mb-1">Secure Processing</h4>
-            <p className="text-xs text-slate-400">Your files are encrypted and automatically deleted after processing.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><Zap size={24} /></div>
-            <h4 className="font-bold text-slate-800 mb-1">Original Quality</h4>
-            <p className="text-xs text-slate-400">Get high-quality results without compromising the integrity of your data.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500"><Globe size={24} /></div>
-            <h4 className="font-bold text-slate-800 mb-1">Works Everywhere</h4>
-            <p className="text-xs text-slate-400">Access our tools from any browser or device, anywhere in the world.</p>
-          </div>
-        </div>
-      </section>
-
+            <section className="bg-white border-t border-slate-100 py-12">
+              <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div>
+                  <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><ShieldCheck size={24} /></div>
+                  <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Secure</h4>
+                  <p className="text-xs text-slate-400">Files are encrypted and deleted after processing.</p>
+                </div>
+                <div>
+                  <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><Zap size={24} /></div>
+                  <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Fast</h4>
+                  <p className="text-xs text-slate-400">High-speed processing without quality loss.</p>
+                </div>
+                <div>
+                  <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500 mx-auto"><Globe size={24} /></div>
+                  <h4 className="font-bold text-slate-800 mb-1 text-sm uppercase tracking-wider">Universal</h4>
+                  <p className="text-xs text-slate-400">Works on all devices and browsers.</p>
+                </div>
+              </div>
+            </section>
       <Footer />
     </div>
   );
