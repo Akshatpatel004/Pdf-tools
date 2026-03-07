@@ -10,9 +10,7 @@ import Navbar from "./component/Navbar";
 
 const AppContent = () => {
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showAll, setShowAll] = useState(false); // State moved here
-  
+  const [searchQuery, setSearchQuery] = useState("");  
   const isLoginPage = location.pathname === "/login";
   const isHomePage = location.pathname === "/";
 
@@ -27,16 +25,7 @@ const AppContent = () => {
       )}
 
       <Routes>
-        <Route 
-          path="/" 
-          element={
-            <Home 
-              searchQuery={searchQuery} 
-              showAll={showAll} 
-              setShowAll={setShowAll} 
-            />
-          } 
-        />
+        <Route path="/" element={<Home searchQuery={searchQuery} /> } />
         <Route path="/tool/split-pdf" element={<ToolSplit />} />
         <Route path="/tool/:toolName" element={<ToolUpload />} />
         <Route path="/tool/protect/:toolName" element={<PasswordProtect />} />
