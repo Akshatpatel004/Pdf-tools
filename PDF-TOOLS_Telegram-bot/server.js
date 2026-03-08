@@ -258,13 +258,14 @@ app.post("/convert-pdf-to-word", upload.any("files"), async (req, res) => {
       res.download(convertedFiles[0], (err) => {
         cleanupFiles([convertedFiles[0]], req.files);
       });
-    } else {
-      const zipPath = path.join("Download/pdf_word", `Word_Batch_${Date.now()}.zip`);
-      await createZipFile(convertedFiles, zipPath, "files");
-      res.download(zipPath, (err) => {
-        cleanupFiles([zipPath, ...convertedFiles], req.files);
-      });
-    }
+    } 
+    // else {
+    //   const zipPath = path.join("Download/pdf_word", `Word_Batch_${Date.now()}.zip`);
+    //   await createZipFile(convertedFiles, zipPath, "files");
+    //   res.download(zipPath, (err) => {
+    //     cleanupFiles([zipPath, ...convertedFiles], req.files);
+    //   });
+    // }
   } catch (error) {
     console.error("Cloud API Error:", error);
     cleanupFiles([], req.files);
@@ -387,6 +388,5 @@ app.post('/ocr_pdf', upload.any("files"), async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-
 
 require('./client_bot.js');
