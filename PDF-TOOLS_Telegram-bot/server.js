@@ -133,7 +133,7 @@ app.get("/", (req, res) => {
 
 app.use('/flexxpdf/aiChatbot', require('./routes/flexxpdf_aichatbot.js'))
 
-app.post("/merge_pdf", upload.any('files'), async (req, res) => {
+app.post("/merge_pdf", upload.array('files'), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).send("No files uploaded");
   }
@@ -160,7 +160,7 @@ app.post("/merge_pdf", upload.any('files'), async (req, res) => {
   }
 });
 
-app.post("/imagestopdf", upload.any("files"), async (req, res) => {
+app.post("/imagestopdf", upload.array("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).send("No files uploaded");
   }
@@ -235,7 +235,7 @@ app.post("/pdftopng", upload.array("files"), async (req, res) => {
   }
 });
 
-app.post("/convert-pdf-to-word", upload.any("files"), async (req, res) => {
+app.post("/convert-pdf-to-word", upload.array("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: "No file uploaded" });
   }
@@ -273,7 +273,7 @@ app.post("/convert-pdf-to-word", upload.any("files"), async (req, res) => {
   }
 });
 
-app.post('/split-pdf', upload.any("files"), async (req, res) => {
+app.post('/split-pdf', upload.array("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).send("No files uploaded");
   console.log(req.files.length, req.files);
 
@@ -329,7 +329,7 @@ app.post('/split-pdf', upload.any("files"), async (req, res) => {
   }
 });
 
-app.post('/ocr_pdf', upload.any("files"), async (req, res) => {
+app.post('/ocr_pdf', upload.array("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).send("No files uploaded");
   console.log(req.files.length, req.files);
 
@@ -385,9 +385,8 @@ app.post('/ocr_pdf', upload.any("files"), async (req, res) => {
 
 
 
-app.listen(port,"0.0.0.0" , () => {
+app.listen(port, "0.0.0.0" , () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-
 
 require('./client_bot.js');
