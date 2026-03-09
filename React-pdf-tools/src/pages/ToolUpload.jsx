@@ -192,7 +192,7 @@ const ToolUpload = () => {
             <span className="cursor-pointer font-medium text-slate-400 hover:text-red-500 transition-colors uppercase text-[11px] tracking-widest" onClick={() => navigate('/')}>Home</span>
             <span className="text-slate-300 font-light text-lg">/</span>
             {/* Header Preference: FlexXpdf Red */}
-            <span className="font-medium text-red-600 text-base md:text-lg capitalize">FlexXpdf {tool.title.replace(/-/g, ' ')}</span>
+            <span className="font-medium text-red-600 text-base md:text-lg capitalize">{tool.title.replace(/-/g, ' ')}</span>
           </div>
           <button onClick={() => navigate(-1)} className="md:hidden p-2 -ml-2 text-slate-600 active:bg-slate-100 rounded-full transition-colors"><ArrowLeft size={24} /></button>
           <div className="md:hidden font-medium text-base text-slate-900 tracking-tight capitalize">{tool.title.replace(/-/g, ' ')}</div>
@@ -323,3 +323,4 @@ const ToolUpload = () => {
 };
 
 export default ToolUpload;
+
