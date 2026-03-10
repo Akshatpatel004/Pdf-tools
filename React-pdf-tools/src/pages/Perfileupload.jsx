@@ -74,10 +74,19 @@ const Perfileupload = () => {
   const handleFiles = async (files) => {
     const file = files[0];
     if (!file) return;
+
+    // Fix: Using minetype_routename to support all variations (Excel/Images/etc)
+    const allowedExtraTypes = minetype_routename(toolName) || [];
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith('.pdf');
     const isSignTool = tool.route.includes("sign-pdf");
 
-    if (isPdf || file.type === tool.mineType) {
+    // Comprehensive check: Is it PDF, the specific JSON mineType, or in our helper array?
+    const isAllowed = 
+      isPdf || 
+      (tool.mineType && file.type === tool.mineType) || 
+      (Array.isArray(allowedExtraTypes) ? allowedExtraTypes.includes(file.type) : file.type === allowedExtraTypes);
+
+    if (isAllowed) {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const data = e.target.result;
@@ -94,16 +103,19 @@ const Perfileupload = () => {
         }
       };
       reader.readAsDataURL(file);
-    } else { alert(tool.noFileAlert || "Invalid file type."); }
+    } else { 
+      alert(tool.noFileAlert || "Invalid file type."); 
+    }
   };
 
   const removeFile = () => { setSelectedFile(null); setPdfData(null); setShowEditor(false); };
 
-  // --- CONDITIONAL RENDER: EDITOR (Placed after all hooks) ---
+  // --- CONDITIONAL RENDER: EDITOR ---
   if (showEditor && pdfData) {
-    return <SignPdf pdfData={pdfData} onBack={removeFile} />;
+    return <SignPdf pdfData={pdfData} onBack={removeFile} selectedfile={selectedFile} />;
   }
 
+  
   if (!tool) return <div className="h-screen flex items-center justify-center bg-slate-50">Tool not found</div>;
 
   return (
@@ -113,6 +125,7 @@ const Perfileupload = () => {
           <div className="hidden md:flex items-center gap-3 text-sm tracking-tight">
             <span className="cursor-pointer font-medium text-slate-400 hover:text-red-500 transition-colors uppercase text-[11px] tracking-widest" onClick={() => navigate('/')}>Home</span>
             <span className="text-slate-300 font-light text-lg">/</span>
+            {/* Preference: FlexXpdf Header Red */}
             <span className="font-medium text-red-600 text-base md:text-lg capitalize">{tool.title.replace(/-/g, ' ')}</span>
           </div>
           <button onClick={() => navigate(-1)} className="md:hidden p-2 -ml-2 text-slate-600 active:bg-slate-100 rounded-full transition-colors"><ArrowLeft size={24} /></button>
@@ -136,6 +149,7 @@ const Perfileupload = () => {
               <p className="text-xs text-slate-400 mt-1 mb-6">Supported: {tool.accept || "PDF"}</p>
               <button onClick={() => fileInputRef.current.click()} className="px-10 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 cursor-pointer">Select Files</button>
               
+              {/* Preference: items-start, gap-4, p-4 */}
               <div className="flex items-start gap-4 p-4">
                 <button onClick={openGoogleDrive} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 transition-all cursor-pointer"><img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" className="w-6 h-6" alt="Drive" /></button>
                 <button onClick={openDropbox} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 transition-all cursor-pointer"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg" className="w-6 h-6" alt="Dropbox" /></button>
