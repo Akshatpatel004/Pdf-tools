@@ -5,7 +5,7 @@ import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
 import { Trash2, GripVertical, ShieldCheck, Zap, Globe, ArrowLeft } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
-import SignPdf from '../controler/SignPdf.jsx'; 
+// import SignPdf from '../controler/SignPdf.jsx'; 
 
 const Perfileupload = () => {
   const { toolName } = useParams();
@@ -112,7 +112,7 @@ const Perfileupload = () => {
 
   // --- CONDITIONAL RENDER: EDITOR ---
   if (showEditor && pdfData) {
-    return <SignPdf pdfData={pdfData} onBack={removeFile} selectedfile={selectedFile} />;
+    // return <SignPdf pdfData={pdfData} onBack={removeFile} selectedfile={selectedFile} />;
   }
 
   
