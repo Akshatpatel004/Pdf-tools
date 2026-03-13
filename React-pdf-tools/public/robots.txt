@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://flexxpdf.vercel.app/sitemap.xml
