@@ -156,7 +156,7 @@
     "downloadFileName": "split_pdf_"
   },
   {
-    "route": "toolperfile/pdf to word",
+    "route": "toolperfile/pdf-to-word",
     "img": "https://play-lh.googleusercontent.com/CXxNK9aRLBJu_UVZXzXYqWsYIi_k6HwN8pWVhHhHDD1-YdRDGhkyqCbi2QKjO5Y8ZyY",
     "title": "Pdf to Word",
     "disc": "Convert PDFs to editable Word docs instantly—preserving fonts, layouts, and security for free.",
@@ -238,3 +238,4 @@
 
 
 ]
+
