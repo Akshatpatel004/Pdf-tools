@@ -39,9 +39,8 @@ const Navbar = ({ searchQuery, setSearchQuery, showSearch }) => {
     return (
         <header className="flex items-center justify-between border-b border-primary/10 bg-white dark:bg-background-dark px-4 md:px-10 py-3 sticky top-0 z-50 shadow-sm">
             <div className="flex items-center gap-4 md:gap-8">
-                <div className="flex items-center gap-2 text-primary cursor-pointer" onClick={() => navigate("/")}>
-                    <span className="material-symbols-outlined text-2xl md:text-3xl font-bold">picture_as_pdf</span>
-                    <h2 className="text-red-500 dark:text-red-500 text-lg md:text-xl font-bold tracking-tight">FlexXpdf</h2>
+                <div className="flex items-center text-primary cursor-pointer" onClick={() => navigate("/")}>
+                    <img src="/icons/flexxpdf.png" alt="FlexXPdf" className="h-12 w-10 scale-x-660 scale-y-145 pl-3" />
                 </div>
             </div>
 
