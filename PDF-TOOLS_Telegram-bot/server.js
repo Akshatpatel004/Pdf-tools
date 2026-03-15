@@ -191,7 +191,7 @@ app.post("/imagestopdf", upload.array("files"), async (req, res) => {
   }
 });
 
-app.post("/pdftopng", upload.array("files"), async (req, res) => {
+app.post("/pdftopng", upload.any("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).send("No files uploaded");
   }
@@ -329,7 +329,7 @@ app.post('/split-pdf', upload.array("files"), async (req, res) => {
   }
 });
 
-app.post('/ocr_pdf', upload.array("files"), async (req, res) => {
+app.post('/ocr_pdf', upload.any("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).send("No files uploaded");
   console.log(req.files.length, req.files);
 
