@@ -49,6 +49,7 @@ const mainMenu = {
             ["DOCX to PDF", "PPTX to PDF"],
             ["Excel to PDF", "Compress PDF Size"],
             ["PDF to PNG", "IMAGES to PDF"],
+            ["OCR PDF"],
         ],
         resize_keyboard: true,
     },
@@ -83,12 +84,15 @@ bot.on("message", async (msg) => {
             bot.sendMessage(chatId, "Upload at least 2 or more PDF files to merge.", cancelMenu);
         } else if (text === "IMAGES to PDF") {
             userchoice[userId] = "image_pdf";
-            bot.sendMessage(chatId, "Upload image files (JPG or PNG).", cancelMenu);
+            bot.sendMessage(chatId, "Upload image files (JPG , JPEG , PNG).", cancelMenu);
         } else if (text === "PDF to DOCX") {
             userchoice[userId] = "pdf_docx";
             bot.sendMessage(chatId, "Upload your PDF file . ", cancelMenu);
         } else if (text === "PDF to PNG") {
             userchoice[userId] = "pdf_png";
+            bot.sendMessage(chatId, "Upload your PDF file . ", cancelMenu);
+        } else if (text === "OCR PDF") {
+            userchoice[userId] = "ocr_pdf";
             bot.sendMessage(chatId, "Upload your PDF file . ", cancelMenu);
         } else if (text === "Compress PDF Size") {
             userchoice[userId] = "compress_pdf";
@@ -106,11 +110,19 @@ bot.on("message", async (msg) => {
         if (msg.document) {
             if (!userchoice[userId]) return bot.sendMessage(chatId, "Please select an option first.", mainMenu);
             const fileUrl = await bot.getFileLink(msg.document.file_id);
-            userfiles[userId].push({
-                url: fileUrl,
-                name: msg.document.file_name,
-                mime: msg.document.mime_type
-            });
+
+            if (userchoice[userId] === "image_pdf") {
+                userphoto[userId].push({
+                    url: fileUrl,
+                    name: `photo_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`
+                });
+            } else {
+                userfiles[userId].push({
+                    url: fileUrl,
+                    name: msg.document.file_name,
+                    mime: msg.document.mime_type
+                });
+            }
         } else if (msg.photo && userchoice[userId] === "image_pdf") {
             const photo = msg.photo[msg.photo.length - 1];
             const photoUrl = await bot.getFileLink(photo.file_id);
@@ -147,9 +159,7 @@ bot.on("message", async (msg) => {
                     formData.append("files", fs.createReadStream(localPath));
                 }
 
-
-                // ... (keep the top of your bot code)
-
+                
                 // --- Route logic fixed to match Server 1 & Server 2 ---
                 if (userchoice[userId] === "image_pdf") {
                     endpoint = `${process.env.server_api}/imagestopdf`;
@@ -168,6 +178,10 @@ bot.on("message", async (msg) => {
                     endpoint = `${process.env.server2_api}/compress-pdf_size`;
                     const extension = targetFiles.length >= 2 ? 'zip' : 'pdf';
                     outputFilePath = path.join(download_dir, `Compressed_${Date.now()}.${extension}`);
+                }else if (userchoice[userId] === "ocr_pdf") {
+                    endpoint = `${process.env.server_api}/ocr_pdf`;
+                    const extension = targetFiles.length >= 2 ? 'zip' : 'pdf';
+                    outputFilePath = path.join(download_dir, `FlexXpdf_ocr_${Date.now()}.${extension}`);
                 } else {
                     endpoint = `${process.env.server2_api}/office-to-pdf_converter`;
                     const extension = targetFiles.length >= 2 ? 'zip' : 'pdf';
