@@ -3,7 +3,7 @@
 This repository includes two separate PDF utility projects:
 
 1. `pdf-tools_telegram-bot` (Node.js Express bot + API)
-2. `react/React-pdf-tools` (React + Vite PDF utilities frontend)
+2. `React-pdf-tools` (React + Vite PDF utilities frontend)
 
 Repository URL: https://github.com/Akshatpatel004/Pdf-tools
 
