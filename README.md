@@ -74,7 +74,7 @@ Website/
     server.js
     Server 2/index.js
     ...
-  javascript/react/React-pdf-tools/
+  React-pdf-tools/
     src/
     package.json
     ...
