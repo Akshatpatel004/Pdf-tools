@@ -51,25 +51,25 @@ node index.js
 
 ## Project 2: React-pdf-tools
 
-Path: `react/React-pdf-tools/`
+Path: `React-pdf-tools/`
 
 A Vite + React project for implementing PDF tools on the frontend.
 
 ### Install
 ```bash
-cd react/React-pdf-tools
+cd React-pdf-tools
 npm install
 ```
 
 ### Run
 ```bash
-cd react/React-pdf-tools
+cd React-pdf-tools
 npm run dev
 ```
 
 ## Directory overview
 ```
-Website/
+
   pdf-tools_telegram-bot/
     server.js
     Server 2/index.js
