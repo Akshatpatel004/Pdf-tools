@@ -237,7 +237,7 @@
     },
     {
         "route": "toolperfile/Organize-pdf",
-        "img": "/icons/pdf merge.png",
+        "img": "https://g.co/gemini/share/42fab5e327c0",
         "title": "Organize PDF",
         "disc": "Sort pages of your PDF file however you like. Delete PDF pages or add PDF pages to your document at your convenience or Rotate your PDF pages clockwise.",
         "Category": "Popular Tools",
