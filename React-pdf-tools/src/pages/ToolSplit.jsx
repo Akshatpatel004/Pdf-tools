@@ -52,7 +52,7 @@ const ToolSplit = () => {
   };
 
 const openGoogleDrive = () => {
-    if (!window.google || !window.google.picker) return alert("Google SDK is still Loading.");
+    if (!window.google || !window.google.picker) return alert("Google SDK is still warming up.");
     
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,

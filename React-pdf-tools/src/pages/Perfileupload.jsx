@@ -5,6 +5,7 @@ import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
 import { Trash2, GripVertical, ShieldCheck, Zap, Globe, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
+import PdfOrganizer from "../controler/PdfOrganizer.jsx";
 
 const Perfileupload = () => {
   const { toolName } = useParams();
@@ -72,6 +73,7 @@ const Perfileupload = () => {
     });
   };
 
+  const isOrganizePdfTool = tool.route.includes("Organize-pdf");
   const handleFiles = async (files) => {
     const file = files[0];
     if (!file) return;
@@ -79,7 +81,6 @@ const Perfileupload = () => {
 
     const allowedExtraTypes = minetype_routename(tool.route) || [];
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith('.pdf');
-    const isSignTool = tool.route.includes("sign-pdf");
 
     const isAllowed = isPdf || (tool.mineType && file.type === tool.mineType) ||
       (Array.isArray(allowedExtraTypes) ? allowedExtraTypes.includes(file.type) : file.type === allowedExtraTypes);
@@ -95,7 +96,7 @@ const Perfileupload = () => {
           } catch (err) { file.pageNo = null; }
         }
         setSelectedFile(file);
-        if (isSignTool && isPdf) {
+        if (isOrganizePdfTool && isPdf) {
           setPdfData(data);
           setShowEditor(true);
         }
@@ -156,6 +157,10 @@ const Perfileupload = () => {
 
   const removeFile = () => { setSelectedFile(null); setPdfData(null); setShowEditor(false); setIsSuccess(false); };
 
+  if (isOrganizePdfTool && showEditor && pdfData) {
+    return <PdfOrganizer pdfData={pdfData} onCancel={removeFile} initialFile={selectedFile}/>
+  }
+
   if (!tool) return <div className="h-screen flex items-center justify-center bg-slate-50">Tool not found</div>;
 
   return (
@@ -165,7 +170,7 @@ const Perfileupload = () => {
           <div className="hidden md:flex items-center gap-3 text-sm tracking-tight">
             <span className="cursor-pointer font-medium text-slate-400 hover:text-red-500 transition-colors uppercase text-[11px] tracking-widest" onClick={() => navigate('/')}>Home</span>
             <span className="text-slate-300 font-light text-lg">/</span>
-            <span className="font-medium text-red-600 text-base md:text-lg capitalize">FlexXpdf {tool.title.replace(/-/g, ' ')}</span>
+            <span className="font-medium text-red-600 text-base md:text-lg capitalize">{tool.title.replace(/-/g, ' ')}</span>
           </div>
           <button onClick={() => navigate(-1)} className="md:hidden p-2 -ml-2 text-slate-600 active:bg-slate-100 rounded-full transition-colors"><ArrowLeft size={24} /></button>
         </nav>

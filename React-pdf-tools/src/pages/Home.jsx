@@ -62,13 +62,13 @@ const Home = ({ searchQuery }) => {
               
               <div className="mx-auto flex aspect-square w-full items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 p-4">
                 <img 
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/Allin1_Pdftools_bot" 
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/Flexxpdf_bot" 
                   alt="Telegram Bot QR Code" 
                   className="w-full h-full object-contain"
                 />
               </div>
               
-              <p className="mt-6 text-xs font-bold text-[#24A1DE] uppercase tracking-widest">@Allin1_Pdftools_bot</p>
+              <p className="mt-6 text-xs font-bold text-[#24A1DE] uppercase tracking-widest">@Flexxpdf_bot</p>
             </div>
           </div>
         </div>
