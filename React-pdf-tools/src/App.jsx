@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect
 import Home from "./pages/Home";
 import ToolUpload from "./pages/ToolUpload";
 import Perfileupload from "./pages/Perfileupload";
@@ -14,6 +14,20 @@ const AppContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const isLoginPage = location.pathname === "/login";
   const isHomePage = location.pathname === "/";
+
+  // --- HILLTOPADS IMPLEMENTATION ---
+  useEffect(() => {
+    // This tells the script to look for new buttons/elements 
+    // every time the URL changes (Home -> Tool)
+    try {
+      if (window._hta) {
+        window._hta(); // Re-initializes the HilltopAds listener if available
+      }
+    } catch (e) {
+      console.log("Ad script refreshing...");
+    }
+  }, [location]); // Runs every time the route changes
+  // ---------------------------------
 
   return (
     <>
