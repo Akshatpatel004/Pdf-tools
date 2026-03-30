@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import tools from "../data/tools.json";
 import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
-import { triggerAd } from "../App.jsx"
+import { triggerAdOnce } from "../App.jsx"
 import {
     Loader2, Trash2, ShieldCheck, Zap,
     Lock, Unlock, Eye, EyeOff, ArrowLeft, Shield, Globe
@@ -107,7 +107,7 @@ const PasswordProtect = () => {
         if (!isUnlockPage && password !== confirmPassword) { alert("Passwords do not match."); return; }
 
         // 1. Open your HilltopAds Direct URL in a new tab
-        triggerAd();
+        triggerAdOnce();
 
         setIsLoading(true);
         const formData = new FormData();

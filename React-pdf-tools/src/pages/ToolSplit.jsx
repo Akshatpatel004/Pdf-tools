@@ -5,7 +5,7 @@ import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
 import { Loader2, Trash2, CheckCircle2, Plus, X, ShieldCheck, Zap, Globe, GripVertical, ArrowLeft } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
-import { triggerAd } from "../App.jsx"
+import { triggerAdOnce } from "../App.jsx"
 
 
 const ToolSplit = () => {
@@ -141,7 +141,7 @@ const ToolSplit = () => {
     if (!selectedFile || isLoading) return;
 
     // 1. Open your HilltopAds Direct URL in a new tab
-    triggerAd();
+    triggerAdOnce();
 
     setIsLoading(true);
     const splitRange = ranges.map(r => `${r.from}-${r.to}`).join(',');

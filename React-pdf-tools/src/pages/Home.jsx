@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase-config.js";
 import Footer from "../component/Footer.jsx";
-import { triggerAd } from "../App.jsx"
+import { triggerAdOnce } from "../App.jsx"
 
 const Home = ({ searchQuery }) => {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ const Home = ({ searchQuery }) => {
 
   const handleToolClick = (path) => {
     // 1. Open your HilltopAds Direct URL in a new tab
-    triggerAd();
+    triggerAdOnce();
     // 2. Navigate the user to the actual tool page in the current tab
     navigate(path);
   };

@@ -5,7 +5,7 @@ import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
 import { Loader2, Trash2, GripVertical, CheckCircle2, ShieldCheck, Zap, Globe, ArrowLeft } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
-import { triggerAd } from "../App.jsx"
+import { triggerAdOnce } from "../App.jsx"
 
 
 // --- DND KIT IMPORTS ---
@@ -213,7 +213,7 @@ const ToolUpload = () => {
     setIsLoading(true);
 
     // 1. Open your HilltopAds Direct URL in a new tab
-    triggerAd();
+    triggerAdOnce();
 
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append('files', file));

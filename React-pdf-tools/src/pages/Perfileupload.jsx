@@ -6,7 +6,7 @@ import Footer from "../component/Footer.jsx";
 import { Trash2, GripVertical, ShieldCheck, Zap, Globe, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import PdfOrganizer from "../controler/PdfOrganizer.jsx";
-import { triggerAd } from "../App.jsx"
+import { triggerAdOnce } from "../App.jsx"
 
 
 const Perfileupload = () => {
@@ -115,7 +115,7 @@ const Perfileupload = () => {
     if (!selectedFile || isLoading) return;
 
     // 1. Open your HilltopAds Direct URL in a new tab
-    triggerAd();
+    triggerAdOnce();
 
     setIsLoading(true);
     const formData = new FormData();
