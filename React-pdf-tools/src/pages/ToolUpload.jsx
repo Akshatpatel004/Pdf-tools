@@ -5,6 +5,8 @@ import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
 import { Loader2, Trash2, GripVertical, CheckCircle2, ShieldCheck, Zap, Globe, ArrowLeft } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
+import { triggerAd } from "../App.jsx"
+
 
 // --- DND KIT IMPORTS ---
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -23,15 +25,15 @@ const SortableFileCard = ({ file, index, removeFile, tool, isLoading }) => {
   };
 
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
+    <div
+      ref={setNodeRef}
+      style={style}
       className={`flex items-center gap-4 p-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-red-200 transition-all ${isDragging ? 'shadow-md border-red-400' : ''}`}
     >
       {/* Drag Handle using your GripVertical icon */}
-      <div 
-        {...attributes} 
-        {...listeners} 
+      <div
+        {...attributes}
+        {...listeners}
         className={`p-1 ${isLoading ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'}`}
       >
         <GripVertical size={16} className="text-slate-400" />
@@ -52,8 +54,8 @@ const SortableFileCard = ({ file, index, removeFile, tool, isLoading }) => {
           )}
         </div>
       </div>
-      <button 
-        onClick={() => removeFile(index)} 
+      <button
+        onClick={() => removeFile(index)}
         disabled={isLoading}
         className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-all disabled:opacity-30"
       >
@@ -209,6 +211,10 @@ const ToolUpload = () => {
     e.preventDefault();
     if (selectedFiles.length < (tool.minFiles || 1) || isLoading) return;
     setIsLoading(true);
+
+    // 1. Open your HilltopAds Direct URL in a new tab
+    triggerAd();
+
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append('files', file));
 
@@ -318,11 +324,11 @@ const ToolUpload = () => {
               <div className="space-y-2 mb-6 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
                 <SortableContext items={selectedFiles.map(f => f.id)} strategy={verticalListSortingStrategy}>
                   {selectedFiles.map((file, index) => (
-                    <SortableFileCard 
-                      key={file.id} 
-                      file={file} 
-                      index={index} 
-                      tool={tool} 
+                    <SortableFileCard
+                      key={file.id}
+                      file={file}
+                      index={index}
+                      tool={tool}
                       removeFile={removeFile}
                       isLoading={isLoading}
                     />
@@ -343,7 +349,7 @@ const ToolUpload = () => {
           </div>
         )}
       </main>
-      
+
       <section className="bg-white border-t border-slate-100 py-12">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>

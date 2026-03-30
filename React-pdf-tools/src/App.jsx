@@ -9,6 +9,18 @@ import PasswordProtect from "./pages/PasswordProtect";
 import AiChatBot from "./component/AiChatBot";
 import Navbar from "./component/Navbar";
 
+export const triggerAdOnce = () => {
+  const adLink = "https://flusteredexam.com/bJ3GVg0.P/3/ptvYb/mLVlJhZKDv0/2KOYT/EtyuNgzaAXxQLqTiY/5rMyTYI_3jM/DCUM";
+  const lastAd = localStorage.getItem('last_ad_time');
+  const now = Date.now();
+
+  // 300000 ms = 5 minutes. Change to 60000 for 1 minute to earn faster.
+  if (!lastAd || now - Number(lastAd) > 60000) { 
+    window.open(adLink, "_blank");
+    localStorage.setItem('last_ad_time', String(now));
+  }
+};
+
 const AppContent = () => {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");

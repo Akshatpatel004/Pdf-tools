@@ -6,6 +6,8 @@ import Footer from "../component/Footer.jsx";
 import { Trash2, GripVertical, ShieldCheck, Zap, Globe, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import PdfOrganizer from "../controler/PdfOrganizer.jsx";
+import { triggerAd } from "../App.jsx"
+
 
 const Perfileupload = () => {
   const { toolName } = useParams();
@@ -112,18 +114,21 @@ const Perfileupload = () => {
     if (e) e.preventDefault();
     if (!selectedFile || isLoading) return;
 
+    // 1. Open your HilltopAds Direct URL in a new tab
+    triggerAd();
+
     setIsLoading(true);
     const formData = new FormData();
-    
+
     // CHANGE THIS: Match the server's upload.array('files')
-    formData.append('files', selectedFile); 
+    formData.append('files', selectedFile);
 
     try {
       const API_BASE = tool.api === 1 ? import.meta.env.VITE_SERVER_API : import.meta.env.VITE_SERVER_API2;
 
       const response = await fetch(`${API_BASE}${tool.action}`, {
         method: "POST",
-        body: formData, 
+        body: formData,
       });
 
       if (response.ok) {
@@ -158,7 +163,7 @@ const Perfileupload = () => {
   const removeFile = () => { setSelectedFile(null); setPdfData(null); setShowEditor(false); setIsSuccess(false); };
 
   if (isOrganizePdfTool && showEditor && pdfData) {
-    return <PdfOrganizer pdfData={pdfData} onCancel={removeFile} initialFile={selectedFile}/>
+    return <PdfOrganizer pdfData={pdfData} onCancel={removeFile} initialFile={selectedFile} />
   }
 
   if (!tool) return <div className="h-screen flex items-center justify-center bg-slate-50">Tool not found</div>;
@@ -222,8 +227,8 @@ const Perfileupload = () => {
               </div>
               <div className="bg-[#1E293B] rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between shadow-xl">
                 <div className="text-white text-center md:text-left mb-4 md:mb-0">
-                    <h4 className="font-bold text-base leading-tight">Ready to {tool.title.split('-')[0]}?</h4>
-                    <p className="text-slate-400 text-xs mt-0.5">1 file selected for processing.</p>
+                  <h4 className="font-bold text-base leading-tight">Ready to {tool.title.split('-')[0]}?</h4>
+                  <p className="text-slate-400 text-xs mt-0.5">1 file selected for processing.</p>
                 </div>
                 <button
                   onClick={handleSubmit}
@@ -236,7 +241,7 @@ const Perfileupload = () => {
             </div>
           )}
         </section>
-        
+
         <Footer />
       </main>
     </div>
