@@ -28,7 +28,6 @@ function SortablePageItem({ id, page, index, onRotate, onDelete }) {
 
   return (
     <div ref={setNodeRef} style={style} className="flex flex-col gap-2 group w-full md:w-auto">
-      {/* Draggable Area */}
       <div 
         {...attributes} 
         {...listeners}
@@ -44,7 +43,6 @@ function SortablePageItem({ id, page, index, onRotate, onDelete }) {
         </div>
       </div>
 
-      {/* Controls Area */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2 md:gap-1">
           <button 
@@ -68,17 +66,22 @@ function SortablePageItem({ id, page, index, onRotate, onDelete }) {
   );
 }
 
-// --- Main Organizer Component ---
 export default function PdfOrganizer({ initialFile, onCancel }) {
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const fileInputRef = useRef(null);
+  const scrollableContainerRef = useRef(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+    useSensor(TouchSensor, { 
+      activationConstraint: { 
+        delay: 800, // Reduced to 500ms for a more responsive "hold" feel
+        tolerance: 10 
+      } 
+    })
   );
 
   useEffect(() => { 
@@ -185,6 +188,14 @@ export default function PdfOrganizer({ initialFile, onCancel }) {
     } catch (err) { console.error("Export Error:", err); } finally { setLoading(false); }
   };
 
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+    // Haptic feedback for mobile users
+    if (window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(50); 
+    }
+  };
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -207,7 +218,7 @@ export default function PdfOrganizer({ initialFile, onCancel }) {
       {/* --- SIDEBAR: DESKTOP --- */}
       <aside className="hidden md:flex w-64 bg-[#F1F3F4] border-r border-slate-200 p-6 flex-col gap-8">
         <div>
-          <h1 className="text-red-600 font-black text-xl mb-6 ">FlexXpdf</h1>
+          <h1 className="text-red-600 font-black text-xl mb-6">FlexXpdf</h1>
           <h2 className="text-2xl font-bold text-slate-800 leading-tight">Organize<br/>Pages</h2>
         </div>
 
@@ -240,7 +251,7 @@ export default function PdfOrganizer({ initialFile, onCancel }) {
       </aside>
 
       {/* --- SIDEBAR: MOBILE --- */}
-      <aside className="md:hidden w-14 bg-[#F1F3F4] border-l border-slate-200 flex flex-col items-center py-6 gap-6 order-last relative z-[100]">
+      <aside className="md:hidden w-14 bg-[#F1F3F4] border-l border-slate-200 flex flex-col items-center py-6 gap-6 order-last relative z-10">
         <div className="relative flex flex-col items-center gap-4">
           <div className={`flex flex-col gap-3 transition-all duration-300 origin-bottom ${isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-50 pointer-events-none'}`}>
              <button onClick={openDropbox} className="p-2.5 bg-white rounded-full border border-slate-200 shadow-xl active:bg-slate-50 transition-colors"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg" className="w-5 h-5" alt="Dropbox" /></button>
@@ -267,8 +278,21 @@ export default function PdfOrganizer({ initialFile, onCancel }) {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto bg-[#FBFBFC]">
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={handleDragEnd}>
+        <div 
+          ref={scrollableContainerRef} 
+          className="flex-1 overflow-y-auto bg-[#FBFBFC]"
+        >
+          <DndContext 
+            sensors={sensors} 
+            collisionDetection={closestCenter} 
+            onDragStart={handleDragStart} 
+            onDragEnd={handleDragEnd}
+            autoScroll={{
+              threshold: { x: 0, y: 0.1 },
+              acceleration: 15,
+              canScroll: (element) => element === scrollableContainerRef.current
+            }}
+          >
             <SortableContext items={pages.map(p => p.id)} strategy={rectSortingStrategy}>
               {loading && pages.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center gap-4">
@@ -285,7 +309,6 @@ export default function PdfOrganizer({ initialFile, onCancel }) {
                         onDelete={(idx) => setPages(prev => prev.filter((_, pi) => pi !== idx))}
                       />
                     ))}
-                    {/* Add More Button inside the grid for Desktop */}
                     <button 
                       onClick={() => fileInputRef.current?.click()} 
                       className="hidden md:flex aspect-[3/4] border-2 border-dashed border-slate-200 rounded-xl flex-col items-center justify-center gap-2 hover:bg-red-50 hover:border-red-200 transition-all text-slate-300 hover:text-red-400 cursor-pointer"
@@ -300,7 +323,8 @@ export default function PdfOrganizer({ initialFile, onCancel }) {
 
             <DragOverlay adjustScale={true} dropAnimation={null}>
               {activeId ? (
-                <div className="w-32 md:w-40 shadow-2xl rounded-xl overflow-hidden border-2 border-red-500 bg-white pointer-events-none opacity-90 z-[1000]">
+                /* Scale-90 added here for the 'shrinking' effect when dragging */
+                <div className="w-32 md:w-40 shadow-2xl rounded-xl overflow-hidden border-2 border-red-500 bg-white pointer-events-none opacity-90 z-[1000] scale-90 transition-transform duration-200">
                   <img 
                     src={activePage?.image} 
                     style={{ transform: `rotate(${activePage?.rotation}deg)` }} 
@@ -314,11 +338,10 @@ export default function PdfOrganizer({ initialFile, onCancel }) {
         </div>
       </div>
 
-      {/* Floating Check Button for Mobile */}
       <button 
         onClick={handleApplyChanges}
         disabled={loading || pages.length === 0}
-        className="md:hidden fixed bottom-6 right-20 w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform disabled:opacity-50 z-[90]"
+        className="md:hidden fixed bottom-6 right-20 w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform disabled:opacity-50 z-20"
       >
         {loading ? <Loader2 size={24} className="animate-spin" /> : <Check size={28} />}
       </button>
