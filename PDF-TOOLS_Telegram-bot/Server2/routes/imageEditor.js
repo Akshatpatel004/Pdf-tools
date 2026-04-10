@@ -6,7 +6,7 @@ const multer = require("multer");
 const { exec } = require("child_process");
 const util = require('util');
 const execPromise = util.promisify(exec);
-const { createZipFile, cleanupFiles } = require('../utils'); // Ensure index.js uses module.exports
+const { createZipFile, cleanupFiles } = require('../utils/utils'); 
 
 const upload = multer({ dest: "Uploads/" });
 router.use(express.json());
