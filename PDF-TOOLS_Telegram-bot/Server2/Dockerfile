@@ -13,7 +13,7 @@ RUN apt-get update --fix-missing && apt-get install -y \
 
 
 # imstall python package rembg start
-RUN pip3 install --no-cache-dir "rembg[cpu,cli]" --break-system-packages
+RUN pip3 install --no-cache-dir "rembg[cli]"
 RUN python3 -c "from rembg import new_session; new_session('u2net')"
 # finish downloading python package
 
