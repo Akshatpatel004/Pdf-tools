@@ -15,7 +15,7 @@
         "mineType": "application/pdf",
         "noFileAlert": "Please upload at least two PDF files to merge.",
         "failAlert": "Merge failed. Please try again.",
-        "downloadFileName": "Pdf Merged_",
+        "downloadFileName": "flexxpdf_Pdf Merged_",
         "downloadFileType1": ".pdf",
         "downloadFileType2": ".pdf"
     },
@@ -34,7 +34,7 @@
         "icon": "/icons/image.png",
         "noFileAlert": "Please upload image file to create pdf",
         "failAlert": "pdf create failed. Please try again.",
-        "downloadFileName": "Image to pdf_",
+        "downloadFileName": "flexxpdf_Image to pdf_",
         "downloadFileType1": ".pdf",
         "downloadFileType2": ".pdf"
     },
@@ -54,7 +54,7 @@
         "mineType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "noFileAlert": "Please upload DOCX file",
         "failAlert": "pdf create failed. Please try again.",
-        "downloadFileName": "DOCX_to_pdf convert_",
+        "downloadFileName": "flexxpdf_DOCX_to_pdf_",
         "downloadFileType1": ".pdf",
         "downloadFileType2": ".zip"
     },
@@ -74,7 +74,7 @@
         "mineType": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         "noFileAlert": "Please upload only PPT file",
         "failAlert": "ppt to Pdf convert Fail ! Please try again...",
-        "downloadFileName": "ppt to pdf_",
+        "downloadFileName": "flexxpdf_ppt to pdf_",
         "downloadFileType1": ".pdf",
         "downloadFileType2": ".zip"
     },
@@ -93,7 +93,7 @@
         "icon": "/icons/excel.png",
         "noFileAlert": "Please upload only EXCEL file",
         "failAlert": "pdf create failed. Please try again.",
-        "downloadFileName": "EXCEL_to_pdf_convert_",
+        "downloadFileName": "flexxpdf_EXCEL_to_pdf_",
         "downloadFileType1": ".pdf",
         "downloadFileType2": ".zip"
     },
@@ -113,7 +113,7 @@
         "mineType": "application/pdf",
         "noFileAlert": "Please upload PDF file",
         "failAlert": "pdf compress failed. Please try again.",
-        "downloadFileName": "PDF_Compress_size_",
+        "downloadFileName": "flexxpdf_PDF_Compress_size_",
         "downloadFileType1": ".pdf",
         "downloadFileType2": ".zip"
     },
@@ -133,7 +133,7 @@
         "mineType": "application/pdf",
         "noFileAlert": "Please upload PDF file",
         "failAlert": "pdf to PNG convert failed. Please try again.",
-        "downloadFileName": "PDF_to_PNG convert_",
+        "downloadFileName": "flexxpdf_PDF_to_PNG_",
         "downloadFileType1": ".zip",
         "downloadFileType2": ".zip"
     },
@@ -153,7 +153,7 @@
         "mineType": "application/pdf",
         "noFileAlert": "Please upload PDF file",
         "failAlert": "pdf to PNG convert failed. Please try again.",
-        "downloadFileName": "split_pdf_"
+        "downloadFileName": "flexxpdf_split_pdf_"
     },
     {
         "route": "toolperfile/pdf to word",
@@ -171,7 +171,7 @@
         "mineType": "application/pdf",
         "noFileAlert": "Please upload PDF file",
         "failAlert": "Pdf to Word convert failed. Please try again.",
-        "downloadFileName": "flexxpdf_pdf_docx",
+        "downloadFileName": "flexxpdf_pdf_docx_",
         "downloadFileType1": ".docx",
         "downloadFileType2": ".zip"
     },
@@ -254,5 +254,24 @@
         "downloadFileName": "FlexXpdf_Organize PDF_",
         "downloadFileType1": ".pdf",
         "downloadFileType2": ".pdf"
+    },
+        {
+        "route": "bgImageRemoval",
+        "img": "https://www.techsmith.com/wp-content/uploads/2023/07/remove-background-image.png",
+        "title": "Background Image Removal",
+        "disc": "Background removal AI distinguishing subject from background for clear transparency.",
+        "action": "/imageEditor/bgImageRemoval",
+        "Category": "Image Editor",
+        "h1": "Background Image Removal",
+        "p": "Background removal AI distinguishing subject from background for clear transparency.",
+        "accept": "image/png,image/jpeg,image/jpg",
+        "minFiles": 1,
+        "api": 1,
+        "icon": "/icons/image.png",
+        "noFileAlert": "Please upload image file",
+        "failAlert": "❌ Background removal failed.",
+        "downloadFileName": "flexxpdf_bgImageRemoval_",
+        "downloadFileType1": ".png",
+        "downloadFileType2": ".zip"
     }
 ]

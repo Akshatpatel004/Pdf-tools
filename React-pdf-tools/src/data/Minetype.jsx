@@ -1,3 +1,6 @@
+let imageAcceptRoute=["image-pdf" , "bgImageRemoval"];
+
+
 export function minetype_routename(route) {
     if (route === "excel-pdf") {
         return [
@@ -9,7 +12,7 @@ export function minetype_routename(route) {
             "application/vnd.ms-excel.template.macroEnabled.12",
             "text/csv"
         ];
-    } else if (route === "image-pdf") {
+    } else if (imageAcceptRoute.includes(route)) {
         return ["image/png", "image/jpeg", "image/jpg"];
     }
     return [];
