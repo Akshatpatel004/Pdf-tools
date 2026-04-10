@@ -49,7 +49,7 @@ const mainMenu = {
             ["DOCX to PDF", "PPTX to PDF"],
             ["Excel to PDF", "Compress PDF Size"],
             ["PDF to PNG", "IMAGES to PDF"],
-            ["OCR PDF"],
+            ["OCR PDF"]
         ],
         resize_keyboard: true,
     },
@@ -159,7 +159,7 @@ bot.on("message", async (msg) => {
                     formData.append("files", fs.createReadStream(localPath));
                 }
 
-                
+
                 // --- Route logic fixed to match Server 1 & Server 2 ---
                 if (userchoice[userId] === "image_pdf") {
                     endpoint = `${process.env.server_api}/imagestopdf`;

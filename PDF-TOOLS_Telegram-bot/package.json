@@ -29,6 +29,7 @@
     "pdf-to-img": "^5.0.0",
     "pdfkit": "^0.17.2",
     "telegraf": "^4.16.3",
-    "tesseract.js": "^7.0.0"
+    "tesseract.js": "^7.0.0",
+    "watermark-js-plus": "^1.6.3"
   }
 }

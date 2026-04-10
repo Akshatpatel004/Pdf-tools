@@ -9,7 +9,7 @@ const fsPromises = require("fs/promises");
 const multer = require("multer");
 const upload = multer({ dest: "Uploads/" });
 
-const archiver = require("archiver");
+const { createZipFile, cleanupFiles } = require('./utils/utils.js');
 const cors = require("cors");
 
 const Tesseract = require('tesseract.js');
@@ -51,66 +51,6 @@ function cre_dir() {
   }
 }
 
-function createZipFile(filepath, zipPath, msg) {
-  return new Promise((resolve, reject) => {
-    const output = fs.createWriteStream(zipPath);
-    const archive = archiver("zip", { zlib: { level: 9 } });
-
-    output.on("close", () => {
-      console.log("ZIP created:", zipPath);
-      resolve();
-    });
-
-    archive.on("error", err => {
-      reject(err);
-    });
-
-    archive.pipe(output);
-
-    if (msg === "directory") {
-      const dirs = Array.isArray(filepath) ? filepath : [filepath];
-      dirs.forEach(dir => {
-        if (fs.existsSync(dir)) {
-          archive.directory(dir, path.basename(dir));
-        }
-      });
-    } else if (msg === "files") {
-      const files = Array.isArray(filepath) ? filepath : [filepath];
-      files.forEach(filePath => {
-        if (fs.existsSync(filePath)) {
-          archive.file(filePath, { name: path.basename(filePath) });
-        }
-      });
-    }
-
-    archive.finalize();
-  });
-}
-
-function cleanupFiles(outputs, uploads, folders = []) {
-  setTimeout(() => {
-    outputs.forEach(p => {
-      if (p && fs.existsSync(p)) {
-        try { fs.unlinkSync(p); } catch (e) { console.error("File delete error:", e.message); }
-      }
-    });
-
-    uploads.forEach(f => {
-      if (f.path && fs.existsSync(f.path)) {
-        try { fs.unlinkSync(f.path); } catch (e) { console.error("Upload delete error:", e.message); }
-      }
-    });
-
-    folders.forEach(dir => {
-      if (dir && fs.existsSync(dir)) {
-        try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) { console.error("Folder delete error:", e.message); }
-      }
-    });
-    console.log("Cleanup cycle completed.");
-  }, 10000);
-}
-
-
 function callCloudConverter(inputPath) {
   return new Promise((resolve, reject) => {
     const apiInstance = new CloudmersiveConvertApiClient.ConvertDocumentApi();
@@ -132,6 +72,7 @@ app.get("/", (req, res) => {
 });
 
 app.use('/flexxpdf/aiChatbot', require('./routes/flexxpdf_aichatbot.js'))
+app.use('/imageEditor', require('./routes/imageEditor'))
 
 app.post("/merge_pdf", upload.array('files'), async (req, res) => {
   if (!req.files || req.files.length === 0) {
@@ -235,7 +176,7 @@ app.post("/pdftopng", upload.any("files"), async (req, res) => {
   }
 });
 
-app.post("/convert-pdf-to-word", upload.array("files"), async (req, res) => {
+app.post("/convert-pdf-to-word", upload.any("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: "No file uploaded" });
   }
@@ -333,7 +274,7 @@ app.post('/ocr_pdf', upload.any("files"), async (req, res) => {
   if (!req.files || req.files.length === 0) return res.status(400).send("No files uploaded");
   console.log(req.files.length, req.files);
 
-  const ocrFiles = [];
+  let ocrFiles = [];
   let zippath = null;
 
   // 1. Create a path for the data
@@ -385,8 +326,8 @@ app.post('/ocr_pdf', upload.any("files"), async (req, res) => {
 
 
 
-app.listen(port, "0.0.0.0" , () => {
+app.listen(port,() => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
-require('./client_bot.js');
+// require('./client_bot.js');
