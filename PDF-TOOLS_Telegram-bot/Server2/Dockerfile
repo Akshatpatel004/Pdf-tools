@@ -1,34 +1,34 @@
 FROM node:20
 
-# 1. Install System Dependencies (Ghostscript, LibreOffice, QPDF, and Python)
-RUN apt-get update --fix-missing && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
+# Install Ghostscript, LibreOffice, QPDF, Python, and pip
+RUN apt-get update && apt-get install -y \
     ghostscript \
     libreoffice \
     qpdf \
     ca-certificates \
+   # python3 \
+   # python3-pip \
+  #  python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
+# Install rembg using virtual environment (avoids externally-managed-environment error)
+#RUN python3 -m venv /opt/venv
+#ENV PATH="/opt/venv/bin:$PATH"
+#RUN pip install --upgrade pip
+#RUN pip install rembg[cli]
 
-# imstall python package rembg start
-RUN pip3 install --no-cache-dir "rembg[cli]"
-RUN python3 -c "from rembg import new_session; new_session('u2net')"
-# finish downloading python package
-
-# 4. Set the working directory
+# Set the working directory
 WORKDIR /app
 
-# 5. Copy Node.js dependency files and install
+# Copy dependency files first for better caching
 COPY package*.json ./
 RUN npm install
 
-# 6. Copy the rest of the application code
+# Copy the rest of your application code
 COPY . .
 
-# 7. Expose the application port
+# Expose the port your app runs on
 EXPOSE 3005
 
-# 8. Start the application
+# Start the application
 CMD ["node", "index.js"]
