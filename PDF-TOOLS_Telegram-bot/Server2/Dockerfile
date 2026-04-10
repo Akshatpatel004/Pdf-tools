@@ -17,7 +17,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --upgrade pip
 
 # python package install
-RUN pip install rembg[cli]
+RUN pip install rembg[cpu,cli]
 
 # Set the working directory
 WORKDIR /app
