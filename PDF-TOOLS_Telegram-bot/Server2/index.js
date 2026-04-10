@@ -6,7 +6,7 @@ const multer = require('multer')
 const upload = multer({ dest: 'Uploads' })
 const port = 3005;
 let toPdf = require('office-to-pdf');
-const { createZipFile, cleanupFiles } = require('./utils');
+const { createZipFile, cleanupFiles } = require('./utils/utils');
 const { exec } = require("child_process");
 const util = require('util');
 const execPromise = util.promisify(exec);
@@ -41,7 +41,6 @@ app.get('/', async (req, res) => {
     cre_dir()
     res.send("office-to-pdf_libreoffice server is alive");
 });
-app.use('/imageEditor', require('./routes/imageEditor'))
 
 
 app.post('/office-to-pdf_converter', upload.any('files'), async (req, res) => {

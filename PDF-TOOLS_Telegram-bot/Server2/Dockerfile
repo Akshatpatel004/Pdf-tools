@@ -6,16 +6,18 @@ RUN apt-get update && apt-get install -y \
     libreoffice \
     qpdf \
     ca-certificates \
-   # python3 \
-   # python3-pip \
-  #  python3-venv \
+    # python3 \
+    # python3-pip \
+    # python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# Install rembg using virtual environment (avoids externally-managed-environment error)
-#RUN python3 -m venv /opt/venv
-#ENV PATH="/opt/venv/bin:$PATH"
-#RUN pip install --upgrade pip
-#RUN pip install rembg[cli]
+# Install python virtual environment (avoids externally-managed-environment error)
+# RUN python3 -m venv /opt/venv
+# ENV PATH="/opt/venv/bin:$PATH"
+# RUN pip install --upgrade pip
+
+# python package install
+# RUN pip install rembg[cli]
 
 # Set the working directory
 WORKDIR /app
