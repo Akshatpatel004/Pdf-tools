@@ -41,7 +41,7 @@ app.get('/', async (req, res) => {
     cre_dir()
     res.send("office-to-pdf_libreoffice server is alive");
 });
-
+app.use('/imageEditor', require('./routes/imageEditor'))
 
 app.post('/office-to-pdf_converter', upload.any('files'), async (req, res) => {
     if (!req.files || req.files.length === 0) {
