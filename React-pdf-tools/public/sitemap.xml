@@ -67,4 +67,14 @@
 <priority>0.8</priority>
 </url>
 
+<url>
+<loc>https://flexxpdf.vercel.app/tool/bgImageRemoval</loc>
+<priority>0.8</priority>
+</url>
+
+<url>
+<loc>https://flexxpdf.vercel.app/tool/toolperfile/Organize-pdf</loc>
+<priority>0.8</priority>
+</url>
+  
 </urlset>
