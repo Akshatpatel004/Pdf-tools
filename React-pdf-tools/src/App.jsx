@@ -9,7 +9,7 @@ import PasswordProtect from "./pages/PasswordProtect";
 import AiChatBot from "./component/AiChatBot";
 import Navbar from "./component/Navbar";
 import CompressImage from "./image_pages/CompressImage";
-import ImageFormatConverter from "./image_pages/imageFormatConverter";
+import ImageFormatConverter from "./image_pages/ImageFormatConverter";
 
 export const triggerAdOnce = () => {
   // const adLink = "https://flusteredexam.com/bJ3GVg0.P/3/ptvYb/mLVlJhZKDv0/2KOYT/EtyuNgzaAXxQLqTiY/5rMyTYI_3jM/DCUM";
