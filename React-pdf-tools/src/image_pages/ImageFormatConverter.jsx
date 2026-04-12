@@ -60,14 +60,13 @@ const ImageFormatConverter = () => {
     const { toolName } = useParams();
     const navigate = useNavigate();
 
-    // Logic to find tool data for Image Format Converter
     const tool = tools.find(t => t.route === "image-format-converter") || tools.find(t => t.route === toolName);
 
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [targetFormat, setTargetFormat] = useState('png'); // Default format
+    const [targetFormat, setTargetFormat] = useState('png'); 
     const fileInputRef = useRef(null);
 
     const formats = ['jpeg', 'jpg', 'png', 'tiff', 'webp', 'gif'];
@@ -78,6 +77,71 @@ const ImageFormatConverter = () => {
         }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
+
+    // --- CLOUD IMPORT LOGIC ---
+    useEffect(() => {
+        const initGapi = () => {
+            if (window.gapi) {
+                window.gapi.load('picker', () => console.log("Picker pre-loaded"));
+            }
+        };
+        const timer = setInterval(() => {
+            if (window.gapi) {
+                initGapi();
+                clearInterval(timer);
+            }
+        }, 500);
+        return () => clearInterval(timer);
+    }, []);
+
+    const handleCloudImport = async (url, name, token = null) => {
+        setIsLoading(true);
+        try {
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
+            const blob = await response.blob();
+            const file = new File([blob], name, { type: blob.type });
+            handleFiles([file]);
+        } catch (err) {
+            alert("Failed to import cloud file.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const openGoogleDrive = () => {
+        if (!window.google || !window.google.picker) return alert("Google SDK warming up...");
+        const client = window.google.accounts.oauth2.initTokenClient({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.readonly',
+            callback: async (response) => {
+                if (response.error) return;
+                const picker = new window.google.picker.PickerBuilder()
+                    .addView(window.google.picker.ViewId.DOCS)
+                    .setOAuthToken(response.access_token)
+                    .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY)
+                    .setCallback((data) => {
+                        if (data.action === window.google.picker.Action.PICKED) {
+                            const doc = data.docs[0];
+                            const downloadUrl = `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media`;
+                            handleCloudImport(downloadUrl, doc.name, response.access_token);
+                        }
+                    })
+                    .build();
+                picker.setVisible(true);
+            },
+        });
+        client.requestAccessToken();
+    };
+
+    const openDropbox = () => {
+        if (!window.Dropbox) return alert("Dropbox SDK not loaded");
+        window.Dropbox.choose({
+            success: (files) => handleCloudImport(files[0].link, files[0].name),
+            linkType: "direct",
+            extensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.tiff'],
+        });
+    };
 
     if (!tool) return <div className="h-screen flex items-center justify-center bg-slate-50">Tool not found</div>;
 
@@ -96,28 +160,20 @@ const ImageFormatConverter = () => {
         const fileList = Array.from(files);
         setIsSuccess(false);
 
-        // 1. Check helper for allowed types
         const allowedExtraTypes = minetype_routename(tool.route);
-
-        // 2. Access the property correctly (Check if your JSON uses 'minetype' or 'mineType')
-        // Most FlexXpdf tools use tool.minetype
         const toolDefinedType = tool.minetype || tool.mineType;
 
         const processedFiles = fileList.map((file) => {
-            // Only allow file if it's in the helper list OR matches the tool's specific minetype
             const isAllowedByHelper = Array.isArray(allowedExtraTypes)
                 ? allowedExtraTypes.includes(file.type)
                 : file.type === allowedExtraTypes;
 
             const isAllowedByTool = toolDefinedType && file.type === toolDefinedType;
 
-            // If you only want to accept images specifically defined for THIS tool:
             if (isAllowedByHelper || isAllowedByTool) {
                 file.id = `${file.name}-${Date.now()}-${Math.random()}`;
                 return file;
             }
-
-            // If neither matched, it's an invalid file for this specific route
             return null;
         });
 
@@ -137,7 +193,6 @@ const ImageFormatConverter = () => {
         e.preventDefault();
         if (selectedFiles.length < (tool.minFiles || 1) || isLoading) return;
         setIsLoading(true);
-
         triggerAdOnce();
 
         const formData = new FormData();
@@ -154,8 +209,6 @@ const ImageFormatConverter = () => {
                 const a = document.createElement("a");
                 a.href = url;
                 const timestamp = Date.now();
-
-                // Dynamic naming based on selection count
                 a.download = selectedFiles.length === 1
                     ? `${tool.downloadFileName}${selectedFiles[0].name.replace(/\.[^/.]+$/, "")}_${timestamp}.${targetFormat}`
                     : `${tool.downloadFileName}${timestamp}.zip`;
@@ -223,9 +276,21 @@ const ImageFormatConverter = () => {
                                 Supported: JPG, PNG, WEBP, GIF, TIFF<br />
                                 <span className="opacity-70 font-medium text-red-400">Min. {tool.minFiles} {tool.minFiles === 1 ? 'file' : 'files'} required</span>
                             </p>
-                            <button onClick={() => fileInputRef.current.click()} className="px-10 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all cursor-pointer">
-                                Select Files
-                            </button>
+                            
+                            {/* CLOUD BUTTONS SECTION */}
+                            <div className="flex flex-col items-center gap-4">
+                                <button onClick={() => fileInputRef.current.click()} className="px-10 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all cursor-pointer">
+                                    Select Files
+                                </button>
+                                <div className="flex items-start gap-4 p-4">
+                                    <button onClick={openGoogleDrive} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer" title="Google Drive">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" className="w-6 h-6" alt="Google Drive" />
+                                    </button>
+                                    <button onClick={openDropbox} className="p-2.5 bg-white rounded-xl border border-slate-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer" title="Dropbox">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg" className="w-6 h-6" alt="Dropbox" />
+                                    </button>
+                                </div>
+                            </div>
                             <input type="file" ref={fileInputRef} onChange={(e) => handleFiles(e.target.files)} className="hidden" multiple accept="image/*" />
                         </>
                     )}
@@ -233,8 +298,6 @@ const ImageFormatConverter = () => {
 
                 {selectedFiles.length > 0 && !isSuccess && (
                     <div className="animate-in slide-in-from-bottom-4 duration-500">
-
-                        {/* DROPDOWN LIST FOR FORMAT SELECTION */}
                         <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
                                 <ImageIcon size={18} className="text-red-500" />
