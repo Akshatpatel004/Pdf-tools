@@ -255,7 +255,7 @@
         "downloadFileType1": ".pdf",
         "downloadFileType2": ".pdf"
     },
-        {
+    {
         "route": "bgImageRemoval",
         "img": "https://www.techsmith.com/wp-content/uploads/2023/07/remove-background-image.png",
         "title": "Background Image Removal",
@@ -266,12 +266,49 @@
         "p": "Background removal AI distinguishing subject from background for clear transparency.",
         "accept": "image/png,image/jpeg,image/jpg",
         "minFiles": 1,
-        "api": 1,
+        "api": 2,
         "icon": "/icons/image.png",
         "noFileAlert": "Please upload image file",
         "failAlert": "❌ Background removal failed.",
         "downloadFileName": "flexxpdf_bgImageRemoval_",
         "downloadFileType1": ".png",
+        "downloadFileType2": ".zip"
+    },
+    {
+        "route": "compress-image",
+        "img": "https://play-lh.googleusercontent.com/sZvdPLoLSDwGN2-z86ngn4KXtQsy4Sb7Aqst09s0VHOn36jZ8vs7WV9BlhpufmPyPKoZ=w240-h480-rw",
+        "title": "Compress Image Size",
+        "disc": "Reduce image file size without losing quality.",
+        "action": "/imageEditor/compressImageSize",
+        "Category": "Image Editor",
+        "h1": "Compress Image Size",
+        "p": "Reduce image file size without losing quality.",
+        "accept": "image/png, image/jpeg , image/jpg , image/tiff , image/webp , image/gif",
+        "minFiles": 1,
+        "api": 1,
+        "icon": "/icons/image.png",
+        "noFileAlert": "Please upload image file",
+        "failAlert": "❌ Compress Image failed.",
+        "downloadFileName": "flexxpdf_compressImage_",
+        "downloadFileType1": ".jpeg",
+        "downloadFileType2": ".zip"
+    },
+    {
+        "route": "image-format-converter",
+        "img": "https://rootrisetech.com/images/site/PhotoConvert5_icon.png",
+        "title": "Image Format Converter",
+        "disc": "Effortlessly convert your images between multiple formats like PNG, JPG, JPEG ,Webp, TIFF, and GIF while maintaining high visual quality.",
+        "action": "/imageEditor/imageFormatConverter",
+        "Category": "Image Editor",
+        "h1": "Image Format Converter",
+        "p": "Effortlessly convert your images between multiple formats like PNG, JPG, JPEG ,Webp, TIFF, and GIF while maintaining high visual quality.",
+        "accept": "image/png, image/jpeg , image/jpg , image/tiff , image/webp , image/gif",
+        "minFiles": 1,
+        "api": 1,
+        "icon": "/icons/image.png",
+        "noFileAlert": "Please upload image file",
+        "failAlert": "❌ Image Format Converter failed.",
+        "downloadFileName": "flexxpdf_imageFormatConverter_",
         "downloadFileType2": ".zip"
     }
 ]

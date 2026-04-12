@@ -3,9 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import tools from "../data/tools.json";
 import { minetype_routename } from "../data/Minetype";
 import Footer from "../component/Footer.jsx";
-import { Loader2, Trash2, GripVertical, CheckCircle2, ShieldCheck, Zap, Globe, ArrowLeft } from 'lucide-react';
+import { Loader2, Trash2, GripVertical, CheckCircle2, ShieldCheck, Zap, Globe, ArrowLeft, Sliders } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import { triggerAdOnce } from "../App.jsx"
+
 
 // --- DND KIT IMPORTS ---
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -21,7 +22,7 @@ const SortableFileCard = ({ file, index, removeFile, tool, isLoading }) => {
     transition,
     zIndex: isDragging ? 50 : 'auto',
     opacity: isDragging ? 0.6 : 1,
-    touchAction: 'none' // Important for mobile browsers to ignore default touch actions
+    touchAction: 'none' // Added to prevent scrolling once drag starts
   };
 
   return (
@@ -30,6 +31,7 @@ const SortableFileCard = ({ file, index, removeFile, tool, isLoading }) => {
       style={style}
       className={`flex items-center gap-4 p-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-red-200 transition-all ${isDragging ? 'shadow-md border-red-400' : ''}`}
     >
+      {/* Drag Handle using your GripVertical icon */}
       <div
         {...attributes}
         {...listeners}
@@ -64,23 +66,24 @@ const SortableFileCard = ({ file, index, removeFile, tool, isLoading }) => {
   );
 };
 
-const ToolUpload = () => {
+const CompressImage = () => {
   const { toolName } = useParams();
   const navigate = useNavigate();
-  const tool = tools.find(t => t.route === toolName);
+  const tool = tools.find(t => t.route === "compress-image") ||tools.find(t => t.route === toolName);
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [compressionValue, setCompressionValue] = useState(80); // Default quality level
   const fileInputRef = useRef(null);
 
   // --- UPDATED DND SENSORS FOR MOBILE ---
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 250, // Press and hold for 250ms to activate drag
-        tolerance: 5, // Allow 5px of movement before canceling the long press
+        delay: 250, // Requires a 250ms long-press to start dragging on mobile
+        tolerance: 5, // Allows 5px of movement before the long-press is cancelled
       },
     }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -180,47 +183,39 @@ const ToolUpload = () => {
     } catch (e) { return null; }
   };
 
-  const handleFiles = async (files) => {
-    const fileList = Array.from(files);
-    setIsSuccess(false);
-    const allowedExtraTypes = minetype_routename(tool.route) || [];
+ const handleFiles = async (files) => {
+  const fileList = Array.from(files);
+  setIsSuccess(false);
 
-    const processedFiles = await Promise.all(fileList.map(async (file) => {
-      // 1. Strictly check if the file matches your configuration
-      const isAllowed = (tool.mineType && file.type === tool.mineType) ||
-        (Array.isArray(allowedExtraTypes) ? allowedExtraTypes.includes(file.type) : file.type === allowedExtraTypes);
+  // Get allowed types from helper
+  const allowedExtraTypes = minetype_routename(tool.route) || [];
+  const toolDefinedType = tool.minetype || tool.mineType;
 
-      if (isAllowed) {
-        // 2. ONLY if it's allowed, check if it's a PDF to get page counts
-        const isActualPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith('.pdf');
+  const processedFiles = fileList.map((file) => {
+    // Check if the file matches the tool's specific types
+    const isAllowedByHelper = Array.isArray(allowedExtraTypes)
+      ? allowedExtraTypes.includes(file.type)
+      : file.type === allowedExtraTypes;
 
-        if (isActualPdf) {
-          try {
-            const count = await getPageCount(file);
-            file.pageNo = count;
-          } catch (err) {
-            console.error("Error reading PDF pages:", err);
-            // If the PDF is corrupted, you might want to return null here
-          }
-        }
+    const isAllowedByTool = toolDefinedType && file.type === toolDefinedType;
 
-        file.id = `${file.name}-${Date.now()}-${Math.random()}`;
-        return file;
-      }
-
-      // If not allowed by your config, ignore it
-      return null;
-    }));
-
-    const validFiles = processedFiles.filter(f => f !== null);
-
-    if (validFiles.length === 0) {
-      alert(tool.noFileAlert || "Invalid file type for this tool.");
-      return;
+    // Only allow if it's an image type matched by your configuration
+    if (isAllowedByHelper || isAllowedByTool) {
+      file.id = `${file.name}-${Date.now()}-${Math.random()}`;
+      return file;
     }
+    return null;
+  });
 
-    setSelectedFiles(prev => [...prev, ...validFiles]);
-  };
+  const validFiles = processedFiles.filter(f => f !== null);
+  
+  if (validFiles.length === 0) {
+    alert(tool.noFileAlert || "Invalid file type. Please select supported image formats.");
+    return;
+  }
+  
+  setSelectedFiles(prev => [...prev, ...validFiles]);
+};
 
   const removeFile = (index) => setSelectedFiles(prev => prev.filter((_, i) => i !== index));
 
@@ -228,10 +223,16 @@ const ToolUpload = () => {
     e.preventDefault();
     if (selectedFiles.length < (tool.minFiles || 1) || isLoading) return;
     setIsLoading(true);
+
     triggerAdOnce();
 
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append('files', file));
+    
+    // Add compression quality for image tools
+    if (tool.route === "compress-image") {
+        formData.append('quality', compressionValue);
+    }
 
     try {
       const API_BASE = tool.api === 1 ? import.meta.env.VITE_SERVER_API : import.meta.env.VITE_SERVER_API2;
@@ -329,11 +330,38 @@ const ToolUpload = () => {
 
         {selectedFiles.length > 0 && !isSuccess && (
           <div className="animate-in slide-in-from-bottom-4 duration-500">
+            
+            {/* NEW: IMAGE COMPRESSION LEVEL SLIDER (Only shows for compress-image tool) */}
+            {tool.route === "compress-image" && (
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <Sliders size={18} className="text-red-500" />
+                            <h3 className="font-bold text-slate-800 text-sm">Compression Level</h3>
+                        </div>
+                        <span className="bg-red-50 text-red-600 font-bold px-3 py-1 rounded-lg text-xs">{compressionValue}%</span>
+                    </div>
+                    <input 
+                        type="range" 
+                        min="1" 
+                        max="100" 
+                        value={compressionValue} 
+                        onChange={(e) => setCompressionValue(e.target.value)}
+                        className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-red-500"
+                    />
+                    <div className="flex justify-between text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tight">
+                        <span>Small Size (Low Quality)</span>
+                        <span>Best Quality</span>
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-center mb-4 px-1">
               <h3 className="font-bold flex items-center gap-2 text-sm text-slate-800">Selected ({selectedFiles.length})</h3>
               <button onClick={() => setSelectedFiles([])} className="text-red-500 text-xs font-bold hover:underline cursor-pointer">Clear all</button>
             </div>
 
+            {/* --- DND CONTEXT WRAPPER --- */}
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <div className="space-y-2 mb-6 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
                 <SortableContext items={selectedFiles.map(f => f.id)} strategy={verticalListSortingStrategy}>
@@ -388,4 +416,4 @@ const ToolUpload = () => {
   );
 };
 
-export default ToolUpload;
+export default CompressImage;

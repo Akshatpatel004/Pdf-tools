@@ -1,4 +1,4 @@
-let imageAcceptRoute=["image-pdf" , "bgImageRemoval"];
+let imageAcceptRoute=["image-pdf" , "bgImageRemoval" , "compress-image" , "image-format-converter"];
 
 
 export function minetype_routename(route) {
@@ -13,7 +13,7 @@ export function minetype_routename(route) {
             "text/csv"
         ];
     } else if (imageAcceptRoute.includes(route)) {
-        return ["image/png", "image/jpeg", "image/jpg"];
+        return ["image/png", "image/jpeg", "image/jpg" , "image/tiff" , "image/webp" , "image/gif"];
     }
     return [];
 }

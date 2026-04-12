@@ -24,7 +24,8 @@ const Home = ({ searchQuery }) => {
       case "Convert to PDF": return "picture_as_pdf";
       case "Convert from PDF": return "unarchive";
       case "Edit & Security": return "shield_lock";
-      case "Organize PDF": return "grid_view";
+      case "Optimize PDF": return "low_priority"; // Changed from FileDown to match style
+      case "Image Editor": return "auto_fix_high"; // Suggestion for your new category
       default: return "category";
     }
   };
