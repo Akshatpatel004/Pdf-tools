@@ -233,7 +233,7 @@
         "failAlert": "❌ ocr converting fail",
         "downloadFileName": "flexxpdf_ocr_pdf_",
         "downloadFileType1": ".pdf",
-        "downloadFileType2": ".pdf"
+        "downloadFileType2": ".zip"
     },
     {
         "route": "toolperfile/Organize-pdf",
