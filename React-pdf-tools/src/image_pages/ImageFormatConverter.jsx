@@ -157,7 +157,7 @@ const ImageFormatConverter = () => {
 
                 // Dynamic naming based on selection count
                 a.download = selectedFiles.length === 1
-                    ? `${tool.downloadFileName}${selectedFiles[0].name.replace(/\.[^/.]+$/, "")}_to_${targetFormat}_${timestamp}.${targetFormat}`
+                    ? `${tool.downloadFileName}${selectedFiles[0].name.replace(/\.[^/.]+$/, "")}_${timestamp}.${targetFormat}`
                     : `${tool.downloadFileName}${timestamp}.zip`;
 
                 document.body.appendChild(a);
