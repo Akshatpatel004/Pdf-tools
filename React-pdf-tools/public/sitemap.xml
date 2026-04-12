@@ -9,22 +9,22 @@
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/merge-pdf</loc>
-<priority>0.9</priority>
+<priority>1.0</priority>
 </url>
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/image-pdf</loc>
-<priority>0.9</priority>
+<priority>1.0</priority>
 </url>
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/word-pdf</loc>
-<priority>0.9</priority>
+<priority>1.0</priority>
 </url>
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/ppt-pdf</loc>
-<priority>0.9</priority>
+<priority>1.0</priority>
 </url>
 
 <url>
@@ -49,32 +49,32 @@
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/toolperfile/pdf-to-word</loc>
-<priority>0.8</priority>
+<priority>0.9</priority>
 </url>
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/protect/lock-pdf</loc>
-<priority>0.8</priority>
+<priority>0.9</priority>
 </url>
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/protect/unlock-pdf</loc>
-<priority>0.8</priority>
+<priority>0.9</priority>
 </url>
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/ocr_pdf</loc>
-<priority>0.8</priority>
+<priority>0.9</priority>
 </url>
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/bgImageRemoval</loc>
-<priority>0.8</priority>
+<priority>0.9</priority>
 </url>
 
 <url>
 <loc>https://flexxpdf.vercel.app/tool/toolperfile/Organize-pdf</loc>
-<priority>0.8</priority>
+<priority>0.9</priority>
 </url>
   
 </urlset>
