@@ -341,4 +341,4 @@ app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
-// require('./client_bot.js');
+require('./client_bot.js');
