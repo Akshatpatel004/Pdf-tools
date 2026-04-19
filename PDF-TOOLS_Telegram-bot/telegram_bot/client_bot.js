@@ -170,7 +170,7 @@ bot.on("message", async (msg) => {
             if (!userchoice[userId]) return;
 
             const selectedTool = toolByChoice[userchoice[userId]];
-            const waitMsg = await bot.sendMessage(chatId, "Processing your files... Please wait ⌚");
+            const waitMsg = await bot.sendMessage(chatId, "Processing your files... Please wait ⌚", mainMenu);
 
             try {
                 const targetFiles =
