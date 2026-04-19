@@ -137,7 +137,7 @@ bot.on("message", async (msg) => {
                 userphoto[userId].push({
                     url: fileUrl,
                     name: `photo_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`,
-                    mime: "image/jpeg"
+                    mime: msg.document.mime_type
                 });
             } else {
                 userfiles[userId].push({
