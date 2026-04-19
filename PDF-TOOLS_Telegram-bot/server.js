@@ -341,4 +341,5 @@ app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
-require('./telegram_bot/client_bot.js');
+// require('./telegram_bot/client_bot.js');
+require('./client_bot.js');
