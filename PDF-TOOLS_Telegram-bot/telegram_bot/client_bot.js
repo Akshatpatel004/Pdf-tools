@@ -119,6 +119,11 @@ bot.on("message", async (msg) => {
             return bot.sendMessage(chatId, tool.msg, cancelMenu);
         }
 
+        // not a valid button
+        if (!toolMap[text] && text !== "/start" && text !== "❌ Cancel" && text !== "✅ Conform Upload" && !msg.document && !msg.photo ) {
+            return bot.sendMessage(chatId, "❌ Invalid option. Please select from menu 👇", mainMenu );
+        }
+        
         // -------- CANCEL --------
         if (text === "❌ Cancel") {
             await clearDirectoryItem(userId);
