@@ -3,13 +3,13 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth"; // Add this
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDHs-2Xrur-Zg0kWeOG68XsZLYW2baP68g",
-  authDomain: "flexxpdf-a3800.firebaseapp.com",
-  projectId: "flexxpdf-a3800",
-  storageBucket: "flexxpdf-a3800.firebasestorage.app",
-  messagingSenderId: "2657036383",
-  appId: "1:2657036383:web:b023fd1e5c3c423b2693ea",
-  measurementId: "G-YW7DPVDGHS"
+  apiKey: "AIzaSyA0DKvNNSDpLqu34E9HqtwqOxTdXGAMU6A",
+  authDomain: "flexxpdf-57939.firebaseapp.com",
+  projectId: "flexxpdf-57939",
+  storageBucket: "flexxpdf-57939.firebasestorage.app",
+  messagingSenderId: "276989829150",
+  appId: "1:276989829150:web:d4f4303a548d0282640e0f",
+  measurementId: "G-B3SKMJCD22"
 };
 
 const app = initializeApp(firebaseConfig);
