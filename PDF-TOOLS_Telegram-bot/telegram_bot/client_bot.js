@@ -5,11 +5,31 @@ const fetch = require("node-fetch");
 const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
-
+const firestoreDB = require("../firebase-setup");
 const tools = require("./telegram-data.json");
+const { log } = require("console");
 
 const bot = new TelegramBot(process.env.telegram_bot_api, { polling: true });
 const download_dir = path.join(__dirname, "bot_download");
+
+
+// ---------------- Save User Info ----------------
+async function saveUser(msg) {
+    const userId = msg.from.id;
+
+    const docRef = firestoreDB.collection("TelegramBotUsers").doc(userId);
+
+    const docsnap = await docRef.get();
+
+    if (!docsnap.exists) {
+        await docRef.set({
+            userId : userId,
+            userName : msg.from.username || "",
+            firstName : msg.from.first_name || "",
+            createAt : new Date()
+        }); 
+    }
+}
 
 // ---------------- USER STATE ----------------
 let userchoice = {};
@@ -93,6 +113,7 @@ const cancelMenu = {
 // ---------------- BOT LOGIC ----------------
 bot.on("message", async (msg) => {
     cre_dir();
+    await saveUser(msg);
 
     try {
         const userId = msg.from.id;
@@ -119,12 +140,57 @@ bot.on("message", async (msg) => {
             return bot.sendMessage(chatId, tool.msg, cancelMenu);
         }
 
-        // not a valid button
+        
+        //-------- Broadcast Message by Admin --------
+        if (text && text.startsWith("/broadcast")) {
+            
+            // check is admin or not
+            if (userId.toString() !== process.env.Admin_UserId.toString()) {
+                return bot.sendMessage(chatId, "❌ Invalid option. Please select from menu 👇", mainMenu );
+            }
+
+            // Extract message
+            const broadcastMsg = text.replace("/broadcast" , "").trim();
+
+            if (!broadcastMsg) {
+                return bot.sendMessage(chatId, "⚠️ Please provide Broadcast Message", mainMenu );
+            }
+
+            bot.sendMessage(chatId , "Broadcasting...");
+            try {
+                const snapshot = await firestoreDB.collection("TelegramBotUsers").get();
+
+                let success = 0;
+                let failed = 0;
+
+                for (const doc of snapshot.docs){
+                    const user = doc.data();
+                    
+                    try {
+                        await bot.sendMessage(user.userId , broadcastMsg);
+                        success++;
+                        await new Promise(res => setTimeout(res ,50));
+                    } catch (error) {
+                        failed++;
+                    }
+                }
+
+                bot.sendMessage(chatId , `✅ Broadcast Done \n Success:- ${success} \n Failed:- ${failed}`);
+
+            } catch (error) {
+                console.log(error);
+                bot.sendMessage(chatId , `❌ Broadcast Failed`);
+            }
+            return;
+        }
+
+
+        //-------- Not a Valid Message --------
         if (!toolMap[text] && text !== "/start" && text !== "❌ Cancel" && text !== "✅ Conform Upload" && !msg.document && !msg.photo ) {
             await clearDirectoryItem(userId);
             return bot.sendMessage(chatId, "❌ Invalid option. Please select from menu 👇", mainMenu );
         }
-        
+
         // -------- CANCEL --------
         if (text === "❌ Cancel") {
             await clearDirectoryItem(userId);
@@ -176,7 +242,7 @@ bot.on("message", async (msg) => {
             if (!userchoice[userId]) return;
 
             const selectedTool = toolByChoice[userchoice[userId]];
-            const waitMsg = await bot.sendMessage(chatId, "Processing your files... Please wait ⌚", mainMenu);
+            const waitMsg = await bot.sendMessage(chatId, "Processing your files... Please wait ⌚");
 
             try {
                 const targetFiles =
