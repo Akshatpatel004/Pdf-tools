@@ -7,7 +7,6 @@ const fs = require("fs");
 const path = require("path");
 const firestoreDB = require("../firebase-setup");
 const tools = require("./telegram-data.json");
-const { log } = require("console");
 
 const bot = new TelegramBot(process.env.telegram_bot_api, { polling: true });
 const download_dir = path.join(__dirname, "bot_download");
@@ -15,6 +14,7 @@ const download_dir = path.join(__dirname, "bot_download");
 
 // ---------------- Save User Info ----------------
 async function saveUser(msg) {
+    if (!msg?.from?.id) return;
     const userId = msg.from.id;
 
     const docRef = firestoreDB.collection("TelegramBotUsers").doc(userId);
@@ -113,9 +113,9 @@ const cancelMenu = {
 // ---------------- BOT LOGIC ----------------
 bot.on("message", async (msg) => {
     cre_dir();
-    await saveUser(msg);
 
     try {
+        await saveUser(msg);
         const userId = msg.from.id;
         const chatId = msg.chat.id;
         const text = msg.text;
@@ -145,7 +145,9 @@ bot.on("message", async (msg) => {
         if (text && text.startsWith("/broadcast")) {
             
             // check is admin or not
-            if (userId.toString() !== process.env.Admin_UserId.toString()) {
+            const ADMIN_ID = process.env.Admin_UserId;
+
+            if (!ADMIN_ID || userId.toString() !== ADMIN_ID.toString()) {
                 return bot.sendMessage(chatId, "❌ Invalid option. Please select from menu 👇", mainMenu );
             }
 
