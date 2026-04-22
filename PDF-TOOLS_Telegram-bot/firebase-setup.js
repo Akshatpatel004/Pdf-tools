@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
 
+const initializedFirebase = () =>{
 try {
     if (!process.env.FIREBASE_KEY) {
         throw new Error ("Firebase key is missing from environment variable");
@@ -16,12 +17,12 @@ try {
     });
 
     console.log("Firebase admin initialized successfully"); 
-
+    return admin.firestore();
 } catch (error) {
     console.log("Firebase admin initialized error", error); 
     return null;
 }
-
-const firestoreDB = admin.firestore();
+}
+const firestoreDB = initializedFirebase()
 
 module.exports = firestoreDB;
