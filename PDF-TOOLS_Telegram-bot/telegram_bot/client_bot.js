@@ -13,23 +13,23 @@ const download_dir = path.join(__dirname, "bot_download");
 
 
 // ---------------- Save User Info ----------------
-// async function saveUser(msg) {
-//     if (!msg?.from?.id) return;
-//     const userId = msg.from.id;
+async function saveUser(msg) {
+    if (!msg?.from?.id) return;
+    const userId = msg.from.id;
 
-//     const docRef = firestoreDB.collection("TelegramBotUsers").doc(userId);
+    const docRef = firestoreDB.collection("TelegramBotUsers").doc(userId);
 
-//     const docsnap = await docRef.get();
+    const docsnap = await docRef.get();
 
-//     if (!docsnap.exists) {
-//         await docRef.set({
-//             userId : userId,
-//             userName : msg.from.username || "",
-//             firstName : msg.from.first_name || "",
-//             createAt : new Date()
-//         }); 
-//     }
-// }
+    if (!docsnap.exists) {
+        await docRef.set({
+            userId : userId,
+            userName : msg.from.username || "",
+            firstName : msg.from.first_name || "",
+            createAt : new Date()
+        }); 
+    }
+}
 
 // ---------------- USER STATE ----------------
 let userchoice = {};
@@ -115,11 +115,10 @@ bot.on("message", async (msg) => {
     cre_dir();
 
     try {
-        // await saveUser(msg);
+        saveUser(msg);
         const userId = msg.from.id;
         const chatId = msg.chat.id;
         const text = msg.text;
-        console.log(`user id:- ${userId}`)
 
         if (!userfiles[userId]) {
             userfiles[userId] = [];
