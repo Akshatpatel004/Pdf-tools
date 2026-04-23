@@ -13,23 +13,32 @@ const download_dir = path.join(__dirname, "bot_download");
 
 
 // ---------------- Save User Info ----------------
-// async function saveUser(msg) {
-//     if (!msg?.from?.id) return;
-//     const userId = msg.from.id;
+async function saveUser(msg) {
+    try {
+        if (!msg?.from?.id) {
+            console.warn("Invalid message structure ,skipping saveuser");
+            return false;
+        }
 
-//     const docRef = firestoreDB.collection("TelegramBotUsers").doc(userId);
+        const userId = msg.from.id;
+        const docRef = firestoreDB.collection("TelegramBotUsers").doc(String(userId));
+        const docsnap = await docRef.get();
 
-//     const docsnap = await docRef.get();
-
-//     if (!docsnap.exists) {
-//         await docRef.set({
-//             userId : userId,
-//             userName : msg.from.username || "",
-//             firstName : msg.from.first_name || "",
-//             createAt : new Date()
-//         }); 
-//     }
-// }
+        if (!docsnap.exists) {
+            await docRef.set({
+                userId: userId,
+                userName: msg.from.username || "unknown",
+                firstName: msg.from.first_name || "unknown",
+                createAt: new Date()
+            });
+            console.log("✅ A New User saved");
+        }
+        return true;
+    } catch (error) {
+        console.log("❌ Firebase saveUser Error :- ", error);
+        return false;
+    }
+}
 
 // ---------------- USER STATE ----------------
 let userchoice = {};
@@ -115,11 +124,14 @@ bot.on("message", async (msg) => {
     cre_dir();
 
     try {
-        // saveUser(msg);
         const userId = msg.from.id;
         const chatId = msg.chat.id;
         const text = msg.text;
 
+        saveUser(msg).catch(err =>{
+            console.error("Failed to save user :- ",err);
+        })
+        
         if (!userfiles[userId]) {
             userfiles[userId] = [];
             userphoto[userId] = [];
