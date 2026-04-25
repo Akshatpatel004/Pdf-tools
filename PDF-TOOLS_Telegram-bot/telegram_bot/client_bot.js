@@ -28,7 +28,7 @@ async function saveUser(msg) {
             await docRef.set({
                 userId: userId,
                 userName: msg.from.username || "unknown",
-                firstName: msg.from.first_name || "unknown",
+                Name: `${msg.from.first_name} ${msg.from.last_name}` || "unknown",
                 createAt: new Date()
             });
             console.log("✅ A New User saved");
